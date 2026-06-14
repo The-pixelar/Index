@@ -1,0 +1,544 @@
+```html
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-[#030305] text-slate-100 overflow-hidden selection:bg-[#00e5ff] selection:text-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    
+    <!-- Metadatos de Branding y Navegador Móvil -->
+    <title>The PixelAR</title>
+    <meta name="theme-color" content="#030305">
+    <meta name="apple-mobile-web-app-title" content="The PixelAR">
+    <meta name="application-name" content="The Pixelar proyecto">
+    
+    <!-- Portada / Cover -->
+    <link rel="icon" type="image/png" href="img/PX.png">
+    <link rel="apple-touch-icon" href="img/PX.png">
+    <meta property="og:title" content="The Pixel AR">
+    <meta property="og:image" content="img/PX.png">
+    <meta name="description" content="Bienvenido al hub central de ThePixelar. Un sistema operativo digital de experiencias premium.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <!-- Iconos Phosphor -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            neon: '#00e5ff',
+                            purple: '#b026ff',
+                            dark: '#030305',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'ring-pulse': 'ringPulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        },
+                        ringPulse: {
+                            '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.05)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        .glass {
+            background: rgba(10, 10, 15, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Efectos de las Tarjetas del Hub */
+        .portal-card {
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .portal-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px -10px rgba(0, 229, 255, 0.15);
+            border-color: rgba(0, 229, 255, 0.3);
+            z-index: 10;
+        }
+
+        /* Anillos del Easter Egg */
+        .ring {
+            position: absolute;
+            width: 150px; height: 150px;
+            border: 2px solid rgba(0, 229, 255, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.2), inset 0 0 20px rgba(0, 229, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased w-screen h-screen relative bg-[#030305]">
+
+    <!-- 🎵 Música de Fondo -->
+    <audio id="bgMusic" loop src="img/song.mp3"></audio>
+    <button id="music-toggle" class="fixed bottom-6 right-6 z-[90] p-4 rounded-full glass text-white/70 hover:text-[#00e5ff] transition-all duration-300 hidden">
+        <i id="music-icon" class="ph ph-speaker-high text-2xl"></i>
+    </button>
+
+    <!-- Canvas de Fondo Global -->
+    <canvas id="ambient-canvas" class="fixed inset-0 z-0 opacity-40 pointer-events-none"></canvas>
+
+    <!-- ========================================== -->
+    <!-- 1. INTRODUCCIÓN DE PÍXELES (Rescatada)     -->
+    <!-- ========================================== -->
+    <div id="intro-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#030305] overflow-hidden transition-all duration-1000 ease-in-out">
+        <canvas id="intro-particles" class="absolute inset-0 z-0 pointer-events-none"></canvas>
+        
+        <div class="relative z-10 text-center px-6 flex flex-col items-center">
+            <div id="intro-logo" class="w-24 h-24 mb-8 border border-white/20 rounded-full flex items-center justify-center glass shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-transform duration-1000 transform translate-y-4 opacity-0">
+                <img src="img/PX.png" alt="PX" class="w-12 h-12 object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="ph ph-sparkle text-3xl text-[#00e5ff] hidden"></i>
+            </div>
+            
+            <h1 id="intro-title" class="font-serif text-4xl md:text-6xl font-semibold mb-4 tracking-tight transition-all duration-1000 delay-300 transform translate-y-4 opacity-0 text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">
+                The Pixelar Proyecto
+            </h1>
+            
+            <p id="intro-subtitle" class="text-slate-400 text-sm tracking-[0.2em] uppercase mb-12 transition-all duration-1000 delay-500 transform translate-y-4 opacity-0">
+                Sistema Operativo Inicializado
+            </p>
+
+            <button id="enter-btn" class="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full transition-all duration-1000 delay-700 transform translate-y-4 opacity-0">
+                <div class="absolute inset-0 w-full h-full border border-[#00e5ff]/50 rounded-full group-hover:bg-[#00e5ff]/10 transition-colors duration-500"></div>
+                <div class="relative z-10 flex items-center gap-3 text-white">
+                    <span class="tracking-widest text-sm uppercase font-medium">Arrancar Núcleo</span>
+                    <i class="ph ph-power group-hover:text-[#00e5ff] transition-colors duration-300"></i>
+                </div>
+            </button>
+        </div>
+        
+        <!-- Cortinas de Transición -->
+        <div id="curtain-left" class="absolute top-0 left-0 w-1/2 h-full bg-[#030305] z-20 origin-left transition-transform duration-[1.5s] ease-[cubic-bezier(0.77,0,0.175,1)] hidden"></div>
+        <div id="curtain-right" class="absolute top-0 right-0 w-1/2 h-full bg-[#030305] z-20 origin-right transition-transform duration-[1.5s] ease-[cubic-bezier(0.77,0,0.175,1)] hidden"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. EL NÚCLEO (Hub de Navegación)           -->
+    <!-- ========================================== -->
+    <div id="view-hub" class="absolute inset-0 z-10 opacity-0 transform scale-90 pointer-events-none transition-all duration-800 ease-out overflow-y-auto overflow-x-hidden">
+        
+        <!-- Navbar Minimalista -->
+        <nav class="fixed w-full z-40 top-0 glass border-b-0 border-white/5">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <img src="img/PX.png" alt="PX" class="w-8 h-8 object-contain" onerror="this.style.display='none';">
+                    <span class="font-serif font-semibold text-lg tracking-wide text-white">ThePixelar OS</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 text-xs font-medium tracking-widest uppercase text-[#00e5ff]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#00e5ff] animate-pulse"></span>
+                    En línea
+                </div>
+            </div>
+        </nav>
+
+        <main class="relative z-10 min-h-screen flex flex-col pt-32 pb-20 max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-4xl md:text-6xl font-serif font-semibold mb-6 leading-tight">
+                    Showroom <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00e5ff] to-[#b026ff]">Digital</span>
+                </h2>
+                <p class="text-slate-400 text-lg font-light">
+                    Selecciona un módulo para ejecutarlo directamente en el núcleo.
+                </p>
+            </div>
+
+            <!-- 🗂️ GRID DE TUS ARCHIVOS (Portales) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
+                
+                <!-- 1. Invitaciones -->
+                <button onclick="openPortal('invitacion.html', 'Invitaciones Premium')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-[#00e5ff]/10 border border-[#00e5ff]/20 flex items-center justify-center mb-6">
+                            <i class="ph ph-envelope-open text-2xl text-[#00e5ff]"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Invitaciones Digitales</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Experiencias cinematográficas personalizadas para bodas y eventos.</p>
+                        <div class="text-xs font-medium text-white uppercase tracking-wider flex items-center gap-2">
+                            Ejecutar <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- 2. Restauración -->
+                <button onclick="openPortal('restauracion.html', 'Restauración Fotográfica')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                            <i class="ph ph-image-square text-2xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Restauración</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Recupera la magia de tus fotos antiguas con retoque artesanal.</p>
+                        <div class="text-xs font-medium text-white uppercase tracking-wider flex items-center gap-2">
+                            Ejecutar <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- 3. Inteligencia Artificial -->
+                <button onclick="openPortal('inteligencia-artificial.html', 'Inteligencia Artificial')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 flex items-center justify-center mb-6">
+                            <i class="ph ph-brain text-2xl text-[#8b5cf6]"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Sistemas IA</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Agentes generativos y el cerebro digital de tu marca.</p>
+                        <div class="text-xs font-medium text-white uppercase tracking-wider flex items-center gap-2">
+                            Ejecutar <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- 4. Automatización -->
+                <button onclick="openPortal('automatizacion.html', 'Automatización')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-[#f97316]/10 border border-[#f97316]/20 flex items-center justify-center mb-6">
+                            <i class="ph ph-gear-six text-2xl text-[#f97316]"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Automatización</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Eficiencia absoluta. Eliminamos tareas repetitivas de tu flujo.</p>
+                        <div class="text-xs font-medium text-white uppercase tracking-wider flex items-center gap-2">
+                            Ejecutar <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- 5. Pixel Lab -->
+                <button onclick="openPortal('pixel-lab.html', 'Pixel Lab (R&D)')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full border-dashed border border-[#00ff41]/20">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-[#00ff41]/10 border border-[#00ff41]/20 flex items-center justify-center mb-6">
+                            <i class="ph ph-flask text-2xl text-[#00ff41]"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Pixel Lab</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Laboratorio WebGL y Brutalismo. No apto para proyectos aburridos.</p>
+                        <div class="text-xs font-medium text-[#00ff41] uppercase tracking-wider flex items-center gap-2">
+                            Testear <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+                <!-- 6. Sobre Mí -->
+                <button onclick="openPortal('sobre-mi-contacto.html', 'Perfil de Creador')" class="portal-card relative group rounded-2xl p-[1px] bg-gradient-to-b from-white/10 to-transparent overflow-hidden text-left w-full h-full">
+                    <div class="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl rounded-2xl"></div>
+                    <div class="relative z-10 p-8 flex flex-col h-full">
+                        <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+                            <i class="ph ph-user-focus text-2xl text-slate-300"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Sobre Mí & Contacto</h3>
+                        <p class="text-sm text-slate-400 mb-6 flex-grow">Más que un perfil, la historia detrás de las experiencias digitales.</p>
+                        <div class="text-xs font-medium text-white uppercase tracking-wider flex items-center gap-2">
+                            Conectar <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </button>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. SISTEMA DE VENTANAS (Abre tus archivos) -->
+    <!-- ========================================== -->
+    <div id="os-window-wrapper" class="fixed inset-0 z-50 hidden opacity-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+        <!-- Fondo Oscuro -->
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-xl" onclick="closePortal()"></div>
+        
+        <!-- Contenedor del Módulo Estilo Ventana OS -->
+        <div id="os-window" class="absolute inset-4 md:inset-10 rounded-2xl border border-white/10 bg-[#030305] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-500">
+            
+            <!-- Barra Superior (Top Bar) -->
+            <div class="flex-none h-12 glass border-b border-white/5 flex items-center justify-between px-4 relative z-20">
+                <!-- Botones estilo Mac -->
+                <div class="flex items-center gap-2">
+                    <button onclick="closePortal()" class="w-3.5 h-3.5 rounded-full bg-red-500 hover:bg-red-400 flex items-center justify-center group shadow-sm transition-colors">
+                        <i class="ph ph-x text-[8px] text-black opacity-0 group-hover:opacity-100"></i>
+                    </button>
+                    <div class="w-3.5 h-3.5 rounded-full bg-yellow-500 shadow-sm"></div>
+                    <div class="w-3.5 h-3.5 rounded-full bg-green-500 shadow-sm"></div>
+                </div>
+                <!-- Título Dinámico -->
+                <span id="os-window-title" class="absolute left-1/2 -translate-x-1/2 text-xs uppercase tracking-widest text-slate-400 font-medium">Ejecutando...</span>
+                <!-- Botón Cerrar (Texto) -->
+                <button onclick="closePortal()" class="text-xs text-slate-400 hover:text-white uppercase font-medium tracking-wider flex items-center gap-1 transition-colors">
+                    <i class="ph ph-sign-out"></i> Salir
+                </button>
+            </div>
+
+            <!-- iframe que carga tus páginas -->
+            <div class="relative flex-grow w-full h-full bg-[#030305]">
+                <!-- Animación de carga -->
+                <div id="iframe-loader" class="absolute inset-0 flex flex-col items-center justify-center z-0">
+                    <i class="ph ph-circle-notch animate-spin text-4xl text-[#00e5ff] mb-4"></i>
+                    <p class="text-xs tracking-widest text-slate-400 uppercase animate-pulse">Inicializando entorno...</p>
+                </div>
+                <iframe id="portal-iframe" class="w-full h-full border-none relative z-10 opacity-0 transition-opacity duration-500" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4. EASTER EGG (Inactividad 45s)            -->
+    <!-- ========================================== -->
+    <div id="easter-egg-overlay" class="fixed inset-0 z-[200] pointer-events-none flex flex-col items-center justify-center bg-[#030305]/90 backdrop-blur-md opacity-0 transition-opacity duration-2000 hidden">
+        <div class="relative w-64 h-40 mb-12 flex items-center justify-center">
+            <div class="ring absolute left-4 animate-ring-pulse" style="animation-delay: 0s;"></div>
+            <div class="ring absolute right-4 animate-ring-pulse" style="animation-delay: 1.5s;"></div>
+        </div>
+        <h2 class="font-serif text-2xl md:text-4xl text-white/90 tracking-wide font-light text-center px-6">
+            "Las historias más bonitas empiezan con una invitación."
+        </h2>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- LÓGICA JAVASCRIPT                          -->
+    <!-- ========================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. INTRODUCCIÓN Y ARRANQUE ---
+            const enterBtn = document.getElementById('enter-btn');
+            const introOverlay = document.getElementById('intro-overlay');
+            const curtainLeft = document.getElementById('curtain-left');
+            const curtainRight = document.getElementById('curtain-right');
+            const viewHub = document.getElementById('view-hub');
+            
+            const bgMusic = document.getElementById('bgMusic');
+            const musicToggle = document.getElementById('music-toggle');
+            const musicIcon = document.getElementById('music-icon');
+            let isMusicPlaying = false;
+
+            // Animación inicial Intro
+            setTimeout(() => {
+                document.getElementById('intro-logo').classList.remove('translate-y-4', 'opacity-0');
+                document.getElementById('intro-title').classList.remove('translate-y-4', 'opacity-0');
+                document.getElementById('intro-subtitle').classList.remove('translate-y-4', 'opacity-0');
+                enterBtn.classList.remove('translate-y-4', 'opacity-0');
+            }, 500);
+
+            // Clic en Arrancar Núcleo
+            enterBtn.addEventListener('click', () => {
+                curtainLeft.classList.remove('hidden');
+                curtainRight.classList.remove('hidden');
+                void curtainLeft.offsetWidth; // Force reflow
+                
+                curtainLeft.style.transform = 'scaleX(1)';
+                curtainRight.style.transform = 'scaleX(1)';
+                
+                // Ocultar texto
+                document.getElementById('intro-logo').style.opacity = '0';
+                document.getElementById('intro-title').style.opacity = '0';
+                document.getElementById('intro-subtitle').style.opacity = '0';
+                enterBtn.style.opacity = '0';
+
+                // Play Music
+                bgMusic.volume = 0.5;
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicToggle.classList.remove('hidden');
+                }).catch(e => console.log("Autoplay bloqueado"));
+
+                setTimeout(() => {
+                    introOverlay.style.background = 'transparent';
+                    
+                    // Mostrar Hub
+                    viewHub.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+                    viewHub.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                    
+                    setTimeout(() => {
+                        curtainLeft.style.transform = 'scaleX(0)';
+                        curtainRight.style.transform = 'scaleX(0)';
+                        setTimeout(() => { introOverlay.style.display = 'none'; }, 1500);
+                    }, 100);
+                }, 800);
+            });
+
+            // Play/Pause Música
+            musicToggle.addEventListener('click', () => {
+                if (isMusicPlaying) {
+                    bgMusic.pause();
+                    musicIcon.classList.replace('ph-speaker-high', 'ph-speaker-slash');
+                } else {
+                    bgMusic.play();
+                    musicIcon.classList.replace('ph-speaker-slash', 'ph-speaker-high');
+                }
+                isMusicPlaying = !isMusicPlaying;
+            });
+
+
+            // --- 2. SISTEMA DE iFRAMES (El OS) ---
+            const osWrapper = document.getElementById('os-window-wrapper');
+            const osWindow = document.getElementById('os-window');
+            const osIframe = document.getElementById('portal-iframe');
+            const osTitle = document.getElementById('os-window-title');
+
+            window.openPortal = function(url, title) {
+                // Configurar Modal
+                osTitle.textContent = title;
+                osIframe.src = url;
+                
+                // Mostrar Modal
+                osWrapper.classList.remove('hidden');
+                setTimeout(() => {
+                    osWrapper.classList.remove('opacity-0');
+                    osWrapper.classList.add('opacity-100');
+                    osWindow.classList.remove('scale-95');
+                    osWindow.classList.add('scale-100');
+                    
+                    // Efecto de fondo en el hub
+                    viewHub.style.transform = 'scale(0.95)';
+                    viewHub.style.filter = 'blur(5px)';
+                }, 10);
+            };
+
+            // Cuando el iframe termina de cargar, se muestra
+            osIframe.addEventListener('load', () => {
+                if(osIframe.src && osIframe.src !== window.location.href) {
+                    osIframe.classList.remove('opacity-0');
+                    osIframe.classList.add('opacity-100');
+                }
+            });
+
+            window.closePortal = function() {
+                // Ocultar Modal
+                osWrapper.classList.remove('opacity-100');
+                osWrapper.classList.add('opacity-0');
+                osWindow.classList.remove('scale-100');
+                osWindow.classList.add('scale-95');
+                osIframe.classList.remove('opacity-100');
+                osIframe.classList.add('opacity-0');
+                
+                // Restaurar Hub
+                viewHub.style.transform = 'scale(1)';
+                viewHub.style.filter = 'none';
+
+                setTimeout(() => {
+                    osWrapper.classList.add('hidden');
+                    osIframe.src = ''; // Limpiar src para apagar videos/audios
+                }, 500);
+            };
+
+            // Escuchar mensaje 'CERRAR' desde los archivos hijos
+            window.addEventListener('message', (event) => {
+                if (event.data === 'closeModal') closePortal();
+            });
+
+
+            // --- 3. EASTER EGG DE 45 SEGUNDOS ---
+            let inactivityTimer;
+            const easterEggOverlay = document.getElementById('easter-egg-overlay');
+            
+            function showEasterEgg() {
+                if(introOverlay.style.display === 'none' && osWrapper.classList.contains('hidden')) {
+                    easterEggOverlay.classList.remove('hidden');
+                    setTimeout(() => {
+                        easterEggOverlay.classList.remove('opacity-0');
+                        easterEggOverlay.classList.add('opacity-100');
+                    }, 50);
+                }
+            }
+
+            function resetInactivityTimer() {
+                clearTimeout(inactivityTimer);
+                if (!easterEggOverlay.classList.contains('hidden')) {
+                    easterEggOverlay.classList.remove('opacity-100');
+                    easterEggOverlay.classList.add('opacity-0');
+                    setTimeout(() => easterEggOverlay.classList.add('hidden'), 2000);
+                }
+                inactivityTimer = setTimeout(showEasterEgg, 45000); 
+            }
+
+            ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, resetInactivityTimer, { passive: true });
+            });
+            resetInactivityTimer();
+
+
+            // --- 4. CANVAS: PARTÍCULAS NEÓN AZUL (Para la Intro) ---
+            function setupCanvas(canvasId, color) {
+                const canvas = document.getElementById(canvasId);
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                window.addEventListener('resize', resize);
+                resize();
+
+                for(let i=0; i<80; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 1.5 + 0.5,
+                        speedY: Math.random() * 0.5 + 0.1,
+                        opacity: Math.random() * 0.5 + 0.1
+                    });
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = color;
+                    particles.forEach(p => {
+                        ctx.globalAlpha = p.opacity;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        
+                        p.y -= p.speedY;
+                        if(p.y < -10) {
+                            p.y = canvas.height + 10;
+                            p.x = Math.random() * canvas.width;
+                        }
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            }
+            
+            // Partículas Intro
+            setupCanvas('intro-particles', 'rgba(0, 229, 255, 1)');
+            // Partículas sutiles fondo hub
+            setupCanvas('ambient-canvas', 'rgba(255, 255, 255, 0.4)');
+
+        });
+    </script>
+</body>
+</html>
+
+
+```

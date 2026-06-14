@@ -1,0 +1,470 @@
+
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-[#0a0a0a] text-[#00ff41] overflow-x-hidden selection:bg-[#ff00ff] selection:text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Pixel Lab // R&D | ThePixelar</title>
+    
+    <meta name="description" content="Laboratorio de experimentación digital. WebGL, Brutalismo, Interacciones extremas. No apto para proyectos aburridos.">
+    
+    <!-- Google Fonts: JetBrains Mono es la reina aquí -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;0,800;1,400&family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        pixelar: {
+                            bg: '#0a0a0a',
+                            matrix: '#00ff41',
+                            glitchCyan: '#00ffff',
+                            glitchMagenta: '#ff00ff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Estilos Brutalistas y Glitch -->
+    <style>
+        /* Ocultar cursor nativo */
+        @media (hover: hover) and (pointer: fine) { body { cursor: none; } }
+        
+        /* Cursor Cross de Terminal */
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; pointer-events: none;
+            z-index: 9999; transform: translate(-50%, -50%);
+            color: #00ff41; font-family: 'JetBrains Mono', monospace; font-size: 24px;
+            text-shadow: 0 0 5px #00ff41; mix-blend-mode: difference;
+            transition: transform 0.1s;
+        }
+
+        /* Pantalla de Carga (Decrypting) */
+        #loader {
+            position: fixed; inset: 0; background-color: #0a0a0a; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+            padding: 2rem; transition: opacity 0.3s ease; font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .decrypt-line { display: none; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.8rem; }
+        .decrypt-line.active { display: block; }
+        .decrypt-red { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
+        .decrypt-green { color: #00ff41; text-shadow: 0 0 5px #00ff41; font-weight: bold; font-size: 1.2rem; }
+
+        /* Canvas (Matriz Cruda) */
+        canvas { position: fixed; top: 0; left: 0; z-index: -2; pointer-events: none; opacity: 0.3; }
+
+        /* Efecto Glitch Text */
+        .glitch-text {
+            position: relative; color: white; display: inline-block;
+            font-family: 'Inter', sans-serif; font-weight: 900; text-transform: uppercase;
+        }
+        
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a;
+        }
+        
+        .glitch-text::before {
+            left: 2px; text-shadow: -2px 0 #ff00ff;
+            clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        
+        .glitch-text::after {
+            left: -2px; text-shadow: -2px 0 #00ffff;
+            clip-path: polygon(0 80%, 100% 20%, 100% 100%, 0 100%);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%); }
+            20% { clip-path: polygon(0 15%, 100% 15%, 100% 15%, 0 15%); }
+            40% { clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%); }
+            60% { clip-path: polygon(0 1%, 100% 1%, 100% 2%, 0 2%); }
+            80% { clip-path: polygon(0 33%, 100% 33%, 100% 33%, 0 33%); }
+            100% { clip-path: polygon(0 44%, 100% 44%, 100% 44%, 0 44%); }
+        }
+        
+        @keyframes glitch-anim-2 {
+            0% { clip-path: polygon(0 25%, 100% 25%, 100% 30%, 0 30%); }
+            20% { clip-path: polygon(0 3%, 100% 3%, 100% 3%, 0 3%); }
+            40% { clip-path: polygon(0 5%, 100% 5%, 100% 20%, 0 20%); }
+            60% { clip-path: polygon(0 15%, 100% 15%, 100% 15%, 0 15%); }
+            80% { clip-path: polygon(0 60%, 100% 60%, 100% 60%, 0 60%); }
+            100% { clip-path: polygon(0 80%, 100% 80%, 100% 80%, 0 80%); }
+        }
+
+        /* Hover Glitch Container (Prototipos) */
+        .lab-card {
+            border: 1px solid #333; background: #000; transition: all 0.1s;
+            position: relative; overflow: hidden;
+        }
+        .lab-card:hover { border-color: #00ff41; background: #0a0a0a; }
+        .lab-card:hover .glitch-img { filter: invert(1) hue-rotate(180deg); transform: scale(1.05) translate(2px, -2px); }
+
+        /* Botón Peligro (El botón rojo) */
+        .btn-danger {
+            background: #ff0000; color: white; font-family: 'Inter', sans-serif;
+            font-weight: 900; text-transform: uppercase; border: none;
+            padding: 1rem 3rem; font-size: 1.5rem; cursor: pointer;
+            box-shadow: 4px 4px 0 #8b0000; transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-danger:active { transform: translate(4px, 4px); box-shadow: 0 0 0 #8b0000; }
+
+        /* EASTER EGG (Kernel Panic / System Failure) */
+        body.system-failure { background-color: #0000aa; color: white; font-family: 'Courier New', Courier, monospace; }
+        body.system-failure #custom-cursor { display: none; }
+        body.system-failure canvas { display: none; }
+        body.system-failure .nav-hidden { display: none !important; }
+        
+        #panic-screen {
+            position: fixed; inset: 0; z-index: 9999; background: #0000aa;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 2rem; opacity: 0; pointer-events: none;
+        }
+        #panic-screen.active { opacity: 1; pointer-events: all; }
+
+        .panic-text { font-size: 1.2rem; margin-bottom: 2rem; text-align: left; max-width: 800px; }
+        .recover-input-container { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; }
+        .recover-input { background: transparent; border: none; color: white; outline: none; width: 150px; font-family: 'Courier New', monospace; text-transform: lowercase; }
+        
+        /* Animación de ruido estático CSS puro */
+        .static-noise {
+            position: fixed; inset: 0; z-index: 9998; opacity: 0; pointer-events: none;
+            background-image: repeating-radial-gradient(circle at 17% 32%, white, black 0.00085px);
+            animation: staticAnim 0.2s infinite;
+        }
+        @keyframes staticAnim { 0% { background-position: 0 0; } 100% { background-position: 100% 100%; } }
+
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative transition-colors duration-0">
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor" class="hidden md:block">[+]</div>
+
+    <!-- Pantalla de Carga (Decryption) -->
+    <div id="loader">
+        <div class="decrypt-line" style="color: #555;">> SSH CONNECTING TO THEPIXELAR_LABS...</div>
+        <div class="decrypt-line">> AUTHENTICATING...</div>
+        <div class="decrypt-line decrypt-red">> WARNING: UNSTABLE ENVIRONMENT DETECTED</div>
+        <div class="decrypt-line">> BYPASSING SECURITY PROTOCOLS...</div>
+        <div class="decrypt-line decrypt-green" id="access-granted">> ACCESS GRANTED</div>
+    </div>
+
+    <!-- Background Matrix -->
+    <canvas id="matrixCanvas"></canvas>
+    <div class="static-noise" id="static-overlay"></div>
+
+    <!-- Navegación Brutalista -->
+    <nav class="fixed top-0 w-full z-40 p-6 mix-blend-difference flex justify-between items-start transition-opacity duration-300 opacity-0 nav-hidden" id="main-nav">
+        <a href="#" class="font-mono font-bold text-white hover:text-pixelar-matrix transition-colors cursor-interactive text-sm" id="back-btn">
+            &lt; RETURN_TO_SAFE_ZONE
+        </a>
+        <div class="text-right">
+            <div class="font-mono font-bold text-white text-xl">PIXEL_LAB</div>
+            <div class="font-mono text-pixelar-matrix text-xs mt-1">R&D FACILITY // EXP_MODE: ON</div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow flex flex-col relative z-10 pt-32 pb-12 px-6 max-w-7xl mx-auto w-full nav-hidden" id="main-content">
+        
+        <!-- Hero Section -->
+        <section class="min-h-[50vh] flex flex-col justify-center border-b border-[#333] pb-20 mb-20">
+            <div>
+                <h1 class="glitch-text text-6xl md:text-8xl lg:text-9xl tracking-tighter mb-4" data-text="EXPERIMENT.">EXPERIMENT.</h1>
+                <br>
+                <h1 class="glitch-text text-6xl md:text-8xl lg:text-9xl tracking-tighter text-[#333]" data-text="BREAK.">BREAK.</h1>
+                <br>
+                <h1 class="glitch-text text-6xl md:text-8xl lg:text-9xl tracking-tighter" data-text="BUILD.">BUILD.</h1>
+            </div>
+            <p class="font-mono text-slate-400 mt-12 max-w-xl text-sm leading-relaxed border-l-2 border-pixelar-matrix pl-4">
+                Bienvenido al subsuelo de ThePixelar. Aquí no hay briefs, no hay revisiones de clientes y no hay reglas de usabilidad. Solo código crudo, interacciones extremas y conceptos que empujan la web al límite.
+            </p>
+        </section>
+
+        <!-- The Vault (Prototipos) -->
+        <section class="mb-32">
+            <div class="font-mono text-white text-2xl mb-8 flex items-center gap-4">
+                <span class="bg-pixelar-matrix text-black px-2 py-1 text-sm font-bold">DIRECTORY</span> 
+                <span>/prototypes/active/</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Prototype 1 -->
+                <div class="lab-card p-6 cursor-interactive">
+                    <div class="flex justify-between items-center border-b border-[#333] pb-4 mb-4">
+                        <span class="font-mono text-pixelar-matrix font-bold">EXP_01</span>
+                        <span class="font-mono text-[10px] text-[#555]">WebGL / GLSL</span>
+                    </div>
+                    <h3 class="font-sans font-bold text-2xl text-white mb-2 uppercase">Distorsión Fluida</h3>
+                    <p class="font-mono text-xs text-slate-500 mb-6">Manipulación de píxeles en tiempo real usando shaders de tarjeta gráfica para crear texturas líquidas interactivas.</p>
+                    <div class="w-full h-32 bg-[#111] overflow-hidden flex items-center justify-center">
+                        <span class="font-mono text-[#333] text-xs">Simulando render...</span>
+                    </div>
+                </div>
+
+                <!-- Prototype 2 -->
+                <div class="lab-card p-6 cursor-interactive">
+                    <div class="flex justify-between items-center border-b border-[#333] pb-4 mb-4">
+                        <span class="font-mono text-pixelar-glitchCyan font-bold">EXP_02</span>
+                        <span class="font-mono text-[10px] text-[#555]">Three.js / 3D</span>
+                    </div>
+                    <h3 class="font-sans font-bold text-2xl text-white mb-2 uppercase">Entornos Inmersivos</h3>
+                    <p class="font-mono text-xs text-slate-500 mb-6">Modelos 3D renderizados en el navegador con iluminación dinámica y físicas aplicadas mediante cañones.js.</p>
+                    <div class="w-full h-32 bg-[#111] overflow-hidden flex items-center justify-center">
+                        <span class="font-mono text-[#333] text-xs">Cargando geometrías...</span>
+                    </div>
+                </div>
+
+                <!-- Prototype 3 -->
+                <div class="lab-card p-6 cursor-interactive">
+                    <div class="flex justify-between items-center border-b border-[#333] pb-4 mb-4">
+                        <span class="font-mono text-pixelar-glitchMagenta font-bold">EXP_03</span>
+                        <span class="font-mono text-[10px] text-[#555]">DOM Physics</span>
+                    </div>
+                    <h3 class="font-sans font-bold text-2xl text-white mb-2 uppercase">UI Gravedad</h3>
+                    <p class="font-mono text-xs text-slate-500 mb-6">¿Qué pasa si los botones de una web tienen masa, colisionan y caen por gravedad? Un desastre usable.</p>
+                    <div class="w-full h-32 bg-[#111] overflow-hidden flex items-center justify-center">
+                        <span class="font-mono text-[#333] text-xs">Calculando colisiones...</span>
+                    </div>
+                </div>
+
+                <!-- Prototype 4 -->
+                <div class="lab-card p-6 cursor-interactive">
+                    <div class="flex justify-between items-center border-b border-[#333] pb-4 mb-4">
+                        <span class="font-mono text-white font-bold">EXP_04</span>
+                        <span class="font-mono text-[10px] text-[#555]">CSS Art</span>
+                    </div>
+                    <h3 class="font-sans font-bold text-2xl text-white mb-2 uppercase">Brutalismo Puro</h3>
+                    <p class="font-mono text-xs text-slate-500 mb-6">Diseño anti-diseño. Tipografías gigantes, colores que duelen y cero espacio en blanco. Puro impacto.</p>
+                    <div class="w-full h-32 bg-[#111] overflow-hidden flex items-center justify-center">
+                        <span class="font-mono text-[#333] text-xs">Rompiendo grid...</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- El Botón Rojo (Easter Egg Trigger) -->
+        <section class="py-20 flex flex-col items-center justify-center border-t border-[#333] border-dashed">
+            <p class="font-mono text-sm text-[#555] mb-8 text-center max-w-md">
+                ADVERTENCIA: La siguiente función ejecuta un script inestable que puede comprometer la integridad visual de esta sesión.
+            </p>
+            <button class="btn-danger cursor-interactive" id="red-button">NO TOCAR</button>
+        </section>
+
+    </main>
+
+    <!-- Footer Brutalista -->
+    <footer class="w-full py-4 px-6 border-t border-[#333] font-mono text-[10px] text-[#555] flex justify-between items-center z-10 nav-hidden">
+        <div>PIXELAR_LABS // ROOT ACCESS</div>
+        <div>(C) <span id="year"></span> SYSTEM_CORE</div>
+    </footer>
+
+    <!-- Pantalla de Error (Easter Egg) -->
+    <div id="panic-screen">
+        <div class="panic-text" id="panic-content">
+            <p class="bg-white text-[#0000aa] inline-block px-2 font-bold mb-4">ThePixelar.sys ha encontrado un error fatal.</p>
+            <p>Se ha detenido la ejecución de la interfaz gráfica para prevenir daños a tus retinas creativas.</p>
+            <p class="mt-4">Si es la primera vez que ves esta pantalla de error de ThePixelar, enhorabuena. Eres de los curiosos.</p>
+            <p class="mt-4">Código de parada: 0x000000CURIOSITY</p>
+            <p>Estado del volcado de memoria: COMPLETADO</p>
+            <p class="mt-8">Curiosidad. Esa es la chispa que buscamos en nuestros clientes.</p>
+            <p class="mt-4 text-[#00ff41] font-bold">¿Quieres reiniciar el sistema? Escribe 'exit' y presiona Enter.</p>
+        </div>
+        <div class="recover-input-container mt-8">
+            <span>C:\></span>
+            <input type="text" class="recover-input" id="recover-input" autocomplete="off" spellcheck="false">
+        </div>
+    </div>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Loader Logic (Decryption Sequence)
+            const loader = document.getElementById('loader');
+            const lines = document.querySelectorAll('.decrypt-line');
+            const nav = document.getElementById('main-nav');
+            const mainContent = document.getElementById('main-content');
+            
+            let delay = 500;
+            lines.forEach((line, index) => {
+                setTimeout(() => {
+                    line.classList.add('active');
+                    if(index === lines.length - 1) { // Última línea (Access Granted)
+                        setTimeout(() => {
+                            loader.style.opacity = '0';
+                            setTimeout(() => {
+                                loader.style.display = 'none';
+                                nav.style.opacity = '1';
+                                mainContent.style.opacity = '1';
+                            }, 300); // Rápido, estilo consola
+                        }, 1000);
+                    }
+                }, delay);
+                delay += (index === 2) ? 1000 : 400; // Pausa en la advertencia roja
+            });
+
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // 2. Custom Cursor (Terminal Cross)
+            const cursor = document.getElementById('custom-cursor');
+            const interactables = document.querySelectorAll('.cursor-interactive');
+            const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+            if (isDesktop) {
+                let mouseX = window.innerWidth / 2; let mouseY = window.innerHeight / 2;
+                
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                    // Actualización directa sin easing para sentirse como software antiguo/crudo
+                    cursor.style.left = mouseX + 'px';
+                    cursor.style.top = mouseY + 'px';
+                });
+
+                interactables.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        cursor.textContent = '[X]';
+                        cursor.style.color = '#ff0000';
+                        cursor.style.textShadow = '0 0 10px #ff0000';
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        cursor.textContent = '[+]';
+                        cursor.style.color = '#00ff41';
+                        cursor.style.textShadow = '0 0 5px #00ff41';
+                    });
+                });
+            }
+
+            // 3. Canvas Background (Matriz de Código)
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            
+            const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+            const fontSize = 14;
+            let columns;
+            let drops = [];
+
+            function initCanvas() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                columns = canvas.width / fontSize;
+                drops = [];
+                for (let x = 0; x < columns; x++) { drops[x] = 1; }
+            }
+
+            function drawMatrix() {
+                // Rastro negro para desvanecimiento
+                ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.fillStyle = '#00ff41'; // Verde Matrix
+                ctx.font = fontSize + 'px "JetBrains Mono"';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            window.addEventListener('resize', initCanvas);
+            initCanvas();
+            setInterval(drawMatrix, 50); // Frame rate crudo
+
+            // 4. Easter Egg: System Failure (Blue Screen)
+            const redButton = document.getElementById('red-button');
+            const body = document.body;
+            const panicScreen = document.getElementById('panic-screen');
+            const staticOverlay = document.getElementById('static-overlay');
+            const recoverInput = document.getElementById('recover-input');
+
+            redButton.addEventListener('click', triggerSystemFailure);
+
+            function triggerSystemFailure() {
+                // 1. Mostrar ruido estático brevemente
+                staticOverlay.style.opacity = '1';
+                
+                setTimeout(() => {
+                    staticOverlay.style.opacity = '0';
+                    // 2. Activar pantalla azul
+                    body.classList.add('system-failure');
+                    panicScreen.classList.add('active');
+                    recoverInput.focus();
+                }, 400); // 400ms de "glitch"
+            }
+
+            // Recuperación del Easter Egg
+            recoverInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const val = recoverInput.value.trim().toLowerCase();
+                    if (val === 'exit') {
+                        restoreSystem();
+                    } else {
+                        recoverInput.value = ''; // Limpiar si escribe otra cosa
+                    }
+                }
+            });
+
+            // Evitar que pierda el foco
+            document.addEventListener('click', () => {
+                if(body.classList.contains('system-failure')) {
+                    recoverInput.focus();
+                }
+            });
+
+            function restoreSystem() {
+                staticOverlay.style.opacity = '1'; // Ruido de transición
+                
+                setTimeout(() => {
+                    body.classList.remove('system-failure');
+                    panicScreen.classList.remove('active');
+                    recoverInput.value = '';
+                    staticOverlay.style.opacity = '0';
+                }, 300);
+            }
+
+            // 5. Back Transition
+            const backBtn = document.getElementById('back-btn');
+            if(backBtn) {
+                backBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.body.style.transition = 'opacity 0.5s ease';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => {
+                        console.log("Volviendo al Hub...");
+                        setTimeout(() => { document.body.style.opacity = '1'; }, 500); 
+                    }, 500);
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
+
+

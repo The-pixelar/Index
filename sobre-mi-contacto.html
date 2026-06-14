@@ -1,0 +1,844 @@
+
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-[#030305] text-slate-100 overflow-x-hidden selection:bg-[#00e5ff] selection:text-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Sobre Mí | ThePixelar - Alfredo</title>
+    <meta name="description" content="Más que un perfil, una historia. Conoce al creador detrás de las experiencias digitales de ThePixelar.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        pixelar: {
+                            bg: '#030305',
+                            accent: '#00e5ff',
+                            accentGlow: 'rgba(0, 229, 255, 0.5)',
+                        }
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(0, 229, 255, 0.5), 0 0 30px rgba(0, 229, 255, 0.3)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+  <!-- pruebas -->
+    
+    <!-- GSAP & Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* Custom Cursor */
+        body { cursor: none; }
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 12px; height: 12px;
+            background-color: #00e5ff; border-radius: 50%; pointer-events: none;
+            z-index: 9999; transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.8); mix-blend-mode: difference;
+        }
+        #custom-cursor.hovering {
+            width: 50px; height: 50px; background-color: transparent;
+            border: 1px solid #00e5ff; box-shadow: none;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Floating Words */
+        .floating-word {
+            position: absolute; font-family: 'Playfair Display', serif;
+            font-weight: 700; color: rgba(255, 255, 255, 0.1);
+            pointer-events: auto; transition: color 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+        .floating-word:hover { color: #00e5ff; text-shadow: 0 0 10px #00e5ff; }
+
+        /* Cinemagraph Effect */
+        .cinemagraph-container {
+            position: relative; overflow: hidden;
+        }
+        .cinemagraph-img {
+            animation: breathe 6s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* Terminal Text */
+        .terminal-text::after {
+            content: '|'; animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Holographic Sphere */
+        .holo-sphere {
+            background: radial-gradient(circle at 30% 30%, rgba(0, 229, 255, 0.2), transparent 70%);
+            box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.1), 0 0 20px rgba(0, 229, 255, 0.2);
+            backdrop-filter: blur(5px); border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+        
+        /* Wireframe Mode */
+        body.wireframe-mode * {
+            color: #00e5ff !important; background: transparent !important;
+            border: 1px solid #00e5ff !important; box-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+        body.wireframe-mode img, body.wireframe-mode video { opacity: 0.2; filter: grayscale(1) brightness(2); }
+
+        /* Utilities */
+        .text-neon { color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+        canvas { display: block; } /* Fixes Three.js canvas display bug */
+
+        /* Particle Container */
+        #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        /* Intro Overlay */
+        #intro-overlay {
+            position: fixed; inset: 0; background: #030305; z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <!-- Particle Background Global -->
+    <div id="particles-js"></div>
+
+    <!-- Intro Sequence -->
+    <div id="intro-overlay">
+        <div id="intro-text" class="text-center opacity-0">
+            <h1 class="text-3xl md:text-5xl font-serif mb-4">Detrás de cada experiencia existe una historia.</h1>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="opacity-0 transition-opacity duration-1000" id="main-content">
+
+        <!-- Hero Section -->
+        <section class="min-h-screen flex flex-col md:flex-row items-center justify-center relative overflow-hidden py-20 px-6">
+            <!-- Floating Words (Parallax) -->
+            <div class="absolute inset-0 pointer-events-none" id="floating-words-container">
+                <span class="floating-word text-4xl top-[10%] left-[5%]">CREATIVIDAD</span>
+                <span class="floating-word text-6xl top-[25%] right-[10%]">DISEÑO</span>
+                <span class="floating-word text-3xl bottom-[20%] left-[15%]">CÓDIGO</span>
+                <span class="floating-word text-5xl bottom-[10%] right-[20%]">EMOCIÓN</span>
+                <span class="floating-word text-2xl top-[15%] right-[30%]">IA</span>
+                <span class="floating-word text-4xl bottom-[30%] left-[40%]">AUTOMATIZACIÓN</span>
+            </div>
+
+            <!-- Main Photo (Cinemagraph & Parallax) -->
+            <div class="w-full md:w-2/5 h-[60vh] md:h-[80vh] relative z-10 cinemagraph-container cursor-pointer group" id="hero-photo-container">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#030305] via-transparent to-transparent z-20 opacity-50"></div>
+                <img src="img/yo.png" alt="Alfredo" class="w-full h-full object-cover object-center cinemagraph-img transition-transform duration-500 group-hover:scale-105" id="hero-photo">
+            </div>
+
+            <!-- Glass Panel Intro -->
+            <div class="w-full md:w-2/5 mt-10 md:mt-0 md:ml-[-10%] z-20" id="glass-intro">
+                <div class="glass-panel p-10 rounded-2xl relative transform transition-transform duration-300 hover:scale-[1.02]">
+                    <h2 class="text-5xl font-serif mb-4">Hola. Soy Alfredo.</h2>
+                    <p class="text-xl text-slate-300 leading-relaxed">
+                        Diseño experiencias digitales que las personas recuerdan. No creo páginas. <span class="text-neon font-semibold">Creo emociones.</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Storytelling Section -->
+        <section class="min-h-[300vh] relative" id="storytelling-section">
+            <div class="sticky top-0 h-screen w-full overflow-hidden z-0">
+               <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-40 z-0">
+                <source src="img/lv_0_20241011175635.mp4" type="video/mp4">
+            </video>
+                <div class="absolute inset-0 bg-[#030305] opacity-70"></div>
+            </div>
+
+            <div class="relative z-10 -mt-[300vh]">
+                <div class="h-screen flex items-center justify-center px-6 story-phrase">
+                    <h2 class="text-4xl md:text-6xl font-serif text-center">"No empecé creando páginas web."</h2>
+                </div>
+                <div class="h-screen flex items-center justify-center px-6 story-phrase">
+                    <h2 class="text-4xl md:text-6xl font-serif text-center">"Empecé resolviendo problemas."</h2>
+                </div>
+                <div class="h-screen flex items-center justify-center px-6 story-phrase">
+                    <h2 class="text-4xl md:text-6xl font-serif text-center">"Descubrí que el diseño comunica, <br>pero luego entendí que <span class="text-neon italic">emociona</span>."</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Orbital Skills -->
+        <section class="min-h-screen flex flex-col items-center justify-center py-20 relative overflow-hidden">
+            <h2 class="text-3xl font-serif mb-20 text-center">Mi Universo Creativo</h2>
+            <div id="orbital-canvas-container" class="w-full h-[60vh] relative z-10"></div>
+        </section>
+
+        <!-- Central Phrase -->
+        <section class="min-h-[50vh] flex flex-col items-center justify-center px-6 text-center py-20">
+            <h2 class="text-4xl md:text-7xl font-serif font-bold leading-tight" id="vibrating-phrase">
+                La tecnología cambia todos los días. <br>
+                <span class="text-neon italic">Las emociones permanecen toda la vida.</span>
+            </h2>
+        </section>
+
+        <!-- Philosophy Terminal -->
+        <section class="py-20 px-6 bg-black/50">
+            <div class="max-w-3xl mx-auto font-mono">
+                <div class="mb-4 text-slate-500">$ cat philosophy.txt</div>
+                <div id="terminal-content" class="text-xl md:text-2xl leading-relaxed text-neon"></div>
+            </div>
+        </section>
+
+        <!-- 3D Digital Desk (Placeholder for Three.js) -->
+        <section class="min-h-screen flex items-center justify-center relative py-20">
+            <div class="text-center absolute z-20 pointer-events-none">
+                <h2 class="text-3xl font-serif mb-4">Mi Espacio de Trabajo</h2>
+                <p class="text-slate-400">Donde las ideas cobran vida.</p>
+            </div>
+            <div id="desk-canvas-container" class="w-full h-[80vh] z-10 cursor-grab active:cursor-grabbing"></div>
+             <!-- Tooltips for desk items -->
+             <div class="hidden fixed p-4 bg-black/80 border border-pixelar-accent rounded-lg text-sm pointer-events-none z-50" id="desk-tooltip"></div>
+        </section>
+
+        <!-- Particle Timeline -->
+        <section class="py-20 px-6 relative">
+            <h2 class="text-3xl font-serif text-center mb-20">El Camino Recorrido</h2>
+            <div class="max-w-md mx-auto relative" id="timeline-container">
+                <!-- Timeline items will be generated by JS -->
+            </div>
+        </section>
+
+        <!-- Holographic Services -->
+        <section class="py-20 px-6">
+            <h2 class="text-3xl font-serif text-center mb-20">Lo Que Hago</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-10 max-w-4xl mx-auto">
+                <div class="holo-sphere rounded-full aspect-square flex items-center justify-center text-center p-4 cursor-pointer group transition-all duration-300 hover:scale-110">
+                    <div>
+                        <i class="ph-light ph-palette text-4xl mb-2 text-neon"></i>
+                        <h3 class="font-serif text-xl group-hover:text-neon transition-colors">UX/UI Design</h3>
+                    </div>
+                </div>
+                <div class="holo-sphere rounded-full aspect-square flex items-center justify-center text-center p-4 cursor-pointer group transition-all duration-300 hover:scale-110">
+                    <div>
+                        <i class="ph-light ph-code text-4xl mb-2 text-neon"></i>
+                        <h3 class="font-serif text-xl group-hover:text-neon transition-colors">Desarrollo Web</h3>
+                    </div>
+                </div>
+                <div class="holo-sphere rounded-full aspect-square flex items-center justify-center text-center p-4 cursor-pointer group transition-all duration-300 hover:scale-110">
+                    <div>
+                        <i class="ph-light ph-robot text-4xl mb-2 text-neon"></i>
+                        <h3 class="font-serif text-xl group-hover:text-neon transition-colors">Inteligencia Artificial</h3>
+                    </div>
+                </div>
+                <div class="holo-sphere rounded-full aspect-square flex items-center justify-center text-center p-4 cursor-pointer group transition-all duration-300 hover:scale-110">
+                    <div>
+                        <i class="ph-light ph-lightning text-4xl mb-2 text-neon"></i>
+                        <h3 class="font-serif text-xl group-hover:text-neon transition-colors">Automatización</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Futuristic Counters -->
+        <section class="py-20 px-6 bg-black/50">
+            <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
+                <div>
+                    <div class="text-4xl md:text-5xl font-mono font-bold text-neon counter" data-target="5000">0</div>
+                    <p class="text-slate-400 mt-2 font-serif">Horas Diseñando</p>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-mono font-bold text-neon counter" data-target="120">0</div>
+                    <p class="text-slate-400 mt-2 font-serif">Proyectos Entregados</p>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-mono font-bold text-neon counter" data-target="99">0</div>
+                    <p class="text-slate-400 mt-2 font-serif">% Clientes Felices</p>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-mono font-bold text-neon counter" data-target="1">0</div>
+                    <p class="text-slate-400 mt-2 font-serif">Obsesión: Calidad</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Phrase & Video Background -->
+        <section class="h-screen relative flex items-center justify-center px-6 overflow-hidden">
+             <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-40 z-0">
+                <source src="img/lv_0_20241011175635.mp4" type="video/mp4">
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#030305] via-transparent to-[#030305] z-10"></div>
+            <div class="relative z-20 text-center max-w-4xl">
+                <h2 class="text-3xl md:text-5xl font-serif font-bold mb-8 leading-tight">
+                    Las mejores ideas nacen de una conversación.
+                </h2>
+                <h2 class="text-3xl md:text-5xl font-serif font-bold text-neon leading-tight">
+                    Las mejores experiencias nacen cuando alguien decide hacerlas realidad.
+                </h2>
+            </div>
+        </section>
+
+        <!-- Contact Console -->
+        <section class="py-20 px-6 bg-black" id="contact-section">
+            <div class="max-w-3xl mx-auto">
+                <div class="font-mono text-neon mb-6">> INICIANDO PROTOCOLO DE CONTACTO...</div>
+                <div class="glass-panel rounded-xl p-8 relative overflow-hidden">
+                    <!-- Particle effect container for console -->
+                    <div id="console-particles" class="absolute inset-0 z-0 opacity-30 pointer-events-none"></div>
+                    
+                    <div class="relative z-10 font-mono">
+                        <p class="text-xl mb-8 text-slate-300"><span class="text-neon">AI:</span> ¿Qué idea extraordinaria quieres construir hoy?</p>
+                        <div class="flex items-start">
+                             <span class="text-neon mr-4 mt-2">></span>
+                             <textarea class="w-full bg-transparent border-none outline-none text-xl text-slate-100 resize-none h-32 focus:ring-0 placeholder-slate-600" placeholder="Escribe tu visión aquí..."></textarea>
+                        </div>
+                        <div class="mt-8 text-right">
+                            <button class="px-8 py-3 bg-pixelar-accent text-black font-bold rounded-full hover:shadow-neon transition-shadow duration-300">
+                                ENVIAR TRANSMISIÓN <i class="ph-bold ph-paper-plane-tilt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="h-screen bg-black flex flex-col items-center justify-center px-6 relative overflow-hidden" id="final-cta">
+            <!-- Particle Logo Container -->
+            <div id="particle-logo" class="w-64 h-64 mb-10"></div>
+
+            <h2 class="text-2xl md:text-4xl font-serif text-center mb-4">Gracias por recorrer mi universo creativo.</h2>
+            <h2 class="text-3xl md:text-5xl font-serif text-center text-neon font-bold mb-12">Ahora construyamos el tuyo.</h2>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <a href="#contact-section" class="px-10 py-4 bg-pixelar-accent text-black font-bold rounded-full text-xl hover:shadow-neon transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                    🚀 Iniciar Proyecto
+                </a>
+                <a href="#" class="px-10 py-4 bg-transparent border-2 border-pixelar-accent text-pixelar-accent font-bold rounded-full text-xl hover:bg-pixelar-accent/10 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                    💬 Hablemos
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Register ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // === GLOBAL: Custom Cursor ===
+        const cursor = document.getElementById('custom-cursor');
+        const hoverElements = document.querySelectorAll('a, button, .cursor-pointer, .floating-word');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+        });
+
+
+        // === INTRO SEQUENCE: Particles & Text reveal ===
+        function initIntro() {
+            const introText = document.getElementById('intro-text');
+            const mainContent = document.getElementById('main-content');
+            const introOverlay = document.getElementById('intro-overlay');
+
+            // Simple particle burst using DOM elements for intro
+            for (let i = 0; i < 100; i++) {
+                const p = document.createElement('div');
+                p.classList.add('absolute', 'w-1', 'h-1', 'bg-pixelar-accent', 'rounded-full');
+                p.style.left = '50%';
+                p.style.top = '50%';
+                introOverlay.appendChild(p);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 200 + 50;
+                
+                gsap.to(p, {
+                    x: Math.cos(angle) * distance,
+                    y: Math.sin(angle) * distance,
+                    opacity: 0,
+                    duration: 1.5,
+                    ease: "power2.out",
+                    onComplete: () => p.remove()
+                });
+            }
+
+            const tl = gsap.timeline();
+            tl.to(introText, { opacity: 1, duration: 1, delay: 0.5 })
+              .to(introText.querySelector('h1'), { 
+                  textContent: "Detrás de ThePixelar existe una obsesión por crear.",
+                  duration: 1.5,
+                  delay: 1,
+                  snap: { textContent: 1 },
+              })
+              .to(introOverlay, { opacity: 0, duration: 1, delay: 1, pointerEvents: 'none' })
+              .to(mainContent, { opacity: 1, duration: 1 }, "-=0.5");
+        }
+        // initIntro(); // Call this after external assets are loaded for better sync
+
+
+        // === HERO SECTION: Parallax & Interactive Words ===
+        document.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            // Move words away from cursor
+            document.querySelectorAll('.floating-word').forEach(word => {
+                const rect = word.getBoundingClientRect();
+                const wordX = rect.left + rect.width / 2;
+                const wordY = rect.top + rect.height / 2;
+                
+                const distX = clientX - wordX;
+                const distY = clientY - wordY;
+                const distance = Math.sqrt(distX * distX + distY * distY);
+                const maxDist = 300;
+
+                if (distance < maxDist) {
+                    const force = (maxDist - distance) / maxDist;
+                    const moveX = -distX * force * 0.2;
+                    const moveY = -distY * force * 0.2;
+                    gsap.to(word, { x: moveX, y: moveY, duration: 0.3 });
+                } else {
+                    gsap.to(word, { x: 0, y: 0, duration: 0.5 });
+                }
+            });
+
+            // Parallax for photo and glass panel
+            const moveX = (clientX - centerX) * 0.02;
+            const moveY = (clientY - centerY) * 0.02;
+            
+            gsap.to('#hero-photo-container', { x: moveX, y: moveY, duration: 1 });
+            gsap.to('#glass-intro', { x: -moveX * 1.5, y: -moveY * 1.5, rotationY: moveX * 0.1, rotationX: -moveY * 0.1, duration: 1 });
+        });
+
+
+        // === STORYTELLING SECTION: Video & Text Fade ===
+        ScrollTrigger.create({
+            trigger: "#storytelling-section",
+            start: "top top",
+            end: "bottom bottom",
+            pin: "#story-video",
+            scrub: true,
+        });
+
+        gsap.utils.toArray('.story-phrase').forEach((phrase, i) => {
+            gsap.fromTo(phrase, 
+                { opacity: 0, y: 50 },
+                { 
+                    opacity: 1, y: 0, 
+                    scrollTrigger: {
+                        trigger: phrase,
+                        start: "top center",
+                        end: "bottom center",
+                        scrub: true,
+                        toggleActions: "play reverse play reverse"
+                    }
+                }
+            );
+        });
+
+        
+        // === ORBITAL SKILLS: Three.js ===
+        function initOrbitalSkills() {
+            const container = document.getElementById('orbital-canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Central Sphere (Me)
+            const centerGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+            const centerMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.5 });
+            const centerSphere = new THREE.Mesh(centerGeometry, centerMaterial);
+            scene.add(centerSphere);
+
+            // Orbiting Spheres (Skills)
+            const skills = [
+                { name: "Coffee Lover", icon: "☕" }, { name: "Fotografía", icon: "📷" },
+                { name: "Diseño", icon: "🎨" }, { name: "Desarrollo Web", icon: "💻" },
+                { name: "IA", icon: "🤖" }, { name: "Automatización", icon: "⚡" },
+                { name: "Motion Design", icon: "🎞" }, { name: "Experiencias", icon: "✨" }
+            ];
+            const orbiters = [];
+            const orbitRadius = 5;
+
+            skills.forEach((skill, i) => {
+                const angle = (i / skills.length) * Math.PI * 2;
+                const x = Math.cos(angle) * orbitRadius;
+                const z = Math.sin(angle) * orbitRadius;
+                
+                const orbiterGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+                const orbiterMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+                const orbiter = new THREE.Mesh(orbiterGeometry, orbiterMaterial);
+                
+                orbiter.position.set(x, 0, z);
+                orbiter.userData = { angle: angle, speed: 0.005 + Math.random() * 0.01 };
+                scene.add(orbiter);
+                orbiters.push(orbiter);
+                // Note: Adding text/icons in plain Three.js is complex. For simplicity, we'll stick to spheres.
+            });
+
+            camera.position.z = 10;
+
+            let mouseX = 0, mouseY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                centerSphere.rotation.y += 0.005;
+                
+                orbiters.forEach(orbiter => {
+                    orbiter.userData.angle += orbiter.userData.speed;
+                    orbiter.position.x = Math.cos(orbiter.userData.angle) * orbitRadius;
+                    orbiter.position.z = Math.sin(orbiter.userData.angle) * orbitRadius;
+                    orbiter.position.y = Math.sin(orbiter.userData.angle * 2) * 1; // Add some wavy vertical motion
+                });
+
+                // Slight camera movement based on mouse
+                camera.position.x += (mouseX * 2 - camera.position.x) * 0.05;
+                camera.position.y += (mouseY * 2 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        // initOrbitalSkills(); // Initialize later
+
+
+        // === VIBRATING PHRASE ===
+        gsap.to('#vibrating-phrase', {
+            x: 2, y: 2, rotation: 0.5,
+            duration: 0.1,
+            repeat: -1,
+            yoyo: true,
+            ease: "none",
+            scrollTrigger: {
+                trigger: '#vibrating-phrase',
+                start: "top center",
+                toggleActions: "play pause resume pause"
+            }
+        });
+
+
+        // === PHILOSOPHY TERMINAL: Typing effect ===
+        const philosophyLines = [
+            "> Diseño para emocionar.",
+            "> Programo para resolver.",
+            "> Automatizo para ahorrar tiempo.",
+            "> Creo experiencias para ser recordadas."
+        ];
+        const terminalContent = document.getElementById('terminal-content');
+        let lineIndex = 0;
+        let charIndex = 0;
+
+        function typeTerminal() {
+            if (lineIndex < philosophyLines.length) {
+                if (charIndex < philosophyLines[lineIndex].length) {
+                    terminalContent.innerHTML += philosophyLines[lineIndex].charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeTerminal, 50);
+                } else {
+                    terminalContent.innerHTML += "<br>";
+                    lineIndex++;
+                    charIndex = 0;
+                    setTimeout(typeTerminal, 500);
+                }
+            } else {
+                terminalContent.innerHTML += '<span class="terminal-text"></span>';
+            }
+        }
+        ScrollTrigger.create({
+            trigger: '#terminal-content',
+            start: "top 80%",
+            onEnter: typeTerminal,
+            once: true
+        });
+
+
+        // === 3D DESK: Three.js Placeholder ===
+        function initDesk() {
+            const container = document.getElementById('desk-canvas-container');
+            const tooltip = document.getElementById('desk-tooltip');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Simple geometric placeholders for desk items
+            const material = new THREE.MeshNormalMaterial({ wireframe: true });
+            
+            const laptop = new THREE.Mesh(new THREE.BoxGeometry(4, 0.2, 3), material);
+            laptop.position.set(0, -1, 0);
+            laptop.userData = { name: "Laptop", story: "Cada línea acerca una idea a la realidad." };
+            scene.add(laptop);
+
+            const cameraObj = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 32), material);
+            cameraObj.position.set(3, -0.5, 1);
+            cameraObj.rotation.x = Math.PI / 2;
+            cameraObj.userData = { name: "Cámara", story: "Congelar un momento también es contar una historia." };
+            scene.add(cameraObj);
+
+            const coffee = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.8, 32), material);
+            coffee.position.set(-3, -0.6, 1);
+            coffee.userData = { name: "Café", story: "La mayoría de mis ideas comienzan aquí." };
+            scene.add(coffee);
+
+            camera.position.z = 5;
+            camera.position.y = 2;
+            camera.lookAt(0,0,0);
+
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            function onMouseMove(event) {
+                const rect = container.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(scene.children);
+
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    tooltip.innerHTML = `<strong>${obj.userData.name}</strong><br>${obj.userData.story}`;
+                    tooltip.style.left = `${event.clientX + 15}px`;
+                    tooltip.style.top = `${event.clientY + 15}px`;
+                    tooltip.classList.remove('hidden');
+                    document.body.style.cursor = 'pointer';
+                    gsap.to(obj.scale, { x: 1.2, y: 1.2, z: 1.2, duration: 0.3 });
+                    gsap.to(obj.rotation, { y: "+=0.1", duration: 0.3 });
+
+                } else {
+                    tooltip.classList.add('hidden');
+                    document.body.style.cursor = 'none';
+                    scene.children.forEach(child => {
+                         gsap.to(child.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+                    });
+                }
+            }
+            container.addEventListener('mousemove', onMouseMove);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+            animate();
+             window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        // initDesk(); // Initialize later
+
+
+        // === PARTICLE TIMELINE ===
+        const timelineData = [
+            "Infancia creativa", "Diseño gráfico", "Fotografía", "Marketing",
+            "Desarrollo web", "Restauración fotográfica", "Invitaciones digitales",
+            "Automatización", "Inteligencia Artificial", "ThePixelar",
+            "El siguiente proyecto podría ser el tuyo."
+        ];
+        const timelineContainer = document.getElementById('timeline-container');
+        
+        timelineData.forEach((item, i) => {
+            const el = document.createElement('div');
+            el.classList.add('timeline-item', 'flex', 'items-center', 'mb-10', 'opacity-0');
+            el.innerHTML = `
+                <div class="w-4 h-4 bg-pixelar-accent rounded-full shadow-neon mr-6 z-10 relative"></div>
+                <div class="text-xl font-serif">${item}</div>
+            `;
+            timelineContainer.appendChild(el);
+            
+            if (i < timelineData.length - 1) {
+                const line = document.createElement('div');
+                line.classList.add('absolute', 'left-[7px]', 'w-[2px]', 'bg-pixelar-accent/30', 'h-full', '-z-0');
+                line.style.top = `${(i * 40) + 20}px`; // Rough positioning
+                timelineContainer.appendChild(line);
+                
+                gsap.fromTo(line, { height: 0 }, {
+                    height: '100%',
+                    scrollTrigger: { trigger: el, start: "top center", end: "bottom center", scrub: true }
+                });
+            }
+
+            gsap.to(el, {
+                opacity: 1, x: 0, duration: 0.5,
+                scrollTrigger: { trigger: el, start: "top 80%" }
+            });
+             gsap.from(el.querySelector('.w-4'), { scale:0, duration: 0.5, delay: 0.2, scrollTrigger: { trigger: el, start: "top 80%" } });
+        });
+
+
+        // === COUNTERS ===
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const target = +counter.getAttribute('data-target');
+            ScrollTrigger.create({
+                trigger: counter,
+                start: "top 80%",
+                onEnter: () => {
+                    gsap.to(counter, {
+                        textContent: target,
+                        duration: 2,
+                        ease: "power2.out",
+                        snap: { textContent: 1 },
+                        onUpdate: function() {
+                            counter.textContent = Math.ceil(counter.textContent);
+                        }
+                    });
+                },
+                once: true
+            });
+        });
+
+
+        // === CONTACT CONSOLE PARTICLES ===
+        function initConsoleParticles() {
+             const container = document.getElementById('console-particles');
+             const scene = new THREE.Scene();
+             const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+             const renderer = new THREE.WebGLRenderer({ alpha: true });
+             renderer.setSize(container.clientWidth, container.clientHeight);
+             container.appendChild(renderer.domElement);
+
+             const geometry = new THREE.BufferGeometry();
+             const vertices = [];
+             for (let i = 0; i < 500; i++) {
+                 vertices.push((Math.random() - 0.5) * 10);
+                 vertices.push((Math.random() - 0.5) * 10);
+                 vertices.push((Math.random() - 0.5) * 10);
+             }
+             geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+             const material = new THREE.PointsMaterial({ color: 0x00e5ff, size: 0.05 });
+             const points = new THREE.Points(geometry, material);
+             scene.add(points);
+             camera.position.z = 5;
+
+             function animate() {
+                 requestAnimationFrame(animate);
+                 points.rotation.y += 0.002;
+                 points.rotation.x += 0.001;
+                 renderer.render(scene, camera);
+             }
+             animate();
+        }
+        // initConsoleParticles(); // Initialize later
+
+
+        // === FINAL CTA PARTICLE LOGO ===
+        function initParticleLogo() {
+            // Placeholder for a complex particle logo animation. 
+            // A full implementation would require significant Three.js code to morph particles into a shape.
+            const container = document.getElementById('particle-logo');
+            container.innerHTML = '<div class="w-full h-full flex items-center justify-center text-neon text-6xl font-bold animate-pulse">PXL</div>';
+        }
+        initParticleLogo();
+
+
+        // === EASTER EGGS ===
+        const heroPhoto = document.getElementById('hero-photo');
+        let hoverTimer;
+        heroPhoto.addEventListener('mouseenter', () => {
+            hoverTimer = setTimeout(() => {
+                // Long hover effect: subtle movement
+                gsap.to(heroPhoto, { x: 10, y: -10, duration: 5, yoyo: true, repeat: -1, ease: "sine.inOut" });
+            }, 20000); // 20 seconds
+        });
+        heroPhoto.addEventListener('mouseleave', () => {
+            clearTimeout(hoverTimer);
+            gsap.to(heroPhoto, { x: 0, y: 0, duration: 0.5 });
+        });
+
+        let lastMouseX = 0, lastMouseY = 0;
+        let circularMotion = 0;
+        document.addEventListener('mousemove', (e) => {
+            // Simple detection for circular-ish motion
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            circularMotion += Math.abs(dx) + Math.abs(dy);
+            if(circularMotion > 5000) {
+                 // Trigger "Creativity + Technology" particle text effect (Placeholder)
+                 console.log("Easter Egg: Circular Motion Triggered!");
+                 circularMotion = 0;
+            }
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        let clickCount = 0;
+        heroPhoto.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 3) {
+                document.body.classList.toggle('wireframe-mode');
+                clickCount = 0;
+            }
+            setTimeout(() => clickCount = 0, 500);
+        });
+
+
+        // === INITIALIZATION ORDER ===
+        window.addEventListener('load', () => {
+            initIntro();
+            setTimeout(() => {
+                initOrbitalSkills();
+                initDesk();
+                initConsoleParticles();
+                ScrollTrigger.refresh(); // Refresh ST after dynamic content load
+            }, 1000); // Delay heavy JS inits to prioritize intro
+        });
+
+    </script>
+</body>
+</html>
+
+

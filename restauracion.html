@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-[#030305] text-slate-100 overflow-x-hidden selection:bg-[#ffffff] selection:text-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Restauración Fotográfica | ThePixelar</title>
+    
+    <meta name="description" content="Recupera la magia de tus fotos antiguas. Restauración fotográfica profesional, retoque artesanal en Photoshop y colorización píxel por píxel.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        pixelar: {
+                            bg: '#030305',
+                            silver: '#e2e8f0',
+                            sepia: '#d97706',
+                            sepiaGlow: 'rgba(217, 119, 6, 0.15)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Estilos Personalizados -->
+    <style>
+        /* Cursor Personalizado */
+        @media (hover: hover) and (pointer: fine) { body { cursor: none; } }
+        
+        #custom-cursor {
+            position: fixed; top: 0; left: 0; width: 14px; height: 14px;
+            background-color: #ffffff; border-radius: 50%; pointer-events: none;
+            z-index: 9999; transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); mix-blend-mode: difference;
+        }
+
+        #custom-cursor.hovering {
+            width: 60px; height: 60px; background-color: transparent;
+            border: 1px solid rgba(255,255,255,0.8); backdrop-filter: blur(2px);
+            mix-blend-mode: normal; box-shadow: none; display: flex;
+            align-items: center; justify-content: center;
+        }
+
+        #custom-cursor.hovering::after {
+            content: 'Ver'; font-size: 10px; font-family: 'Inter', sans-serif;
+            color: white; text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        /* Pantalla de Carga (Efecto Escáner) */
+        #loader {
+            position: fixed; inset: 0; background-color: #030305; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        
+        .scanner-line {
+            position: absolute; left: 0; width: 100%; height: 2px;
+            background: #ffffff; box-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff;
+            opacity: 0.8; animation: scan 2.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Utilidades Canvas y Fondo */
+        canvas { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+        .noise-bg {
+            position: fixed; inset: 0; z-index: -1; opacity: 0.04;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            pointer-events: none;
+        }
+
+        /* Reveal Animation */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 1s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* --- COMPONENTE SLIDER ANTES / DESPUÉS --- */
+        .comparison-container {
+            position: relative; width: 100%; max-width: 900px; margin: 0 auto;
+            aspect-ratio: 16/10; overflow: hidden; border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+            cursor: ew-resize; /* Cursor de arrastre horizontal */
+        }
+
+        /* Imagen Base (Después - Restaurada) */
+        .image-after {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; object-position: center;
+        }
+
+        /* Imagen Superpuesta (Antes - Dañada) */
+        .image-before-wrapper {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            /* El clip-path inicial a la mitad (50%) */
+            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+        }
+
+        .image-before {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; object-position: center;
+            /* Filtros CSS para simular daño y antigüedad en caso de usar la misma imagen */
+            filter: grayscale(100%) sepia(40%) contrast(1.2) brightness(0.8) blur(0.5px);
+        }
+
+        /* Capa de rasguños simulada */
+        .scratches-overlay {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(0,0,0,0.1) 50px, rgba(0,0,0,0.1) 51px),
+                              repeating-linear-gradient(0deg, transparent, transparent 150px, rgba(0,0,0,0.2) 150px, rgba(0,0,0,0.2) 151px);
+            mix-blend-mode: overlay; pointer-events: none; opacity: 0.6;
+        }
+
+        /* Input Range Invisible (Controlador) */
+        .comparison-slider {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 10; cursor: ew-resize; margin: 0;
+            appearance: none; -webkit-appearance: none;
+        }
+
+        /* Línea Divisoria */
+        .slider-line {
+            position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+            background-color: white; transform: translateX(-50%); pointer-events: none; z-index: 5;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Botón/Icono del Slider */
+        .slider-button {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 40px; background-color: rgba(3, 3, 5, 0.8);
+            border: 2px solid white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; pointer-events: none; z-index: 6;
+            color: white; backdrop-filter: blur(4px); transition: transform 0.2s;
+        }
+        .comparison-container:hover .slider-button { transform: translate(-50%, -50%) scale(1.1); }
+
+        /* Botón Outline */
+        .btn-outline {
+            position: relative; overflow: hidden; background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3); color: white; transition: all 0.4s ease;
+        }
+        .btn-outline:hover {
+            border-color: #ffffff; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Transition Easter Egg */
+        body { transition: background-color 2s ease, filter 2s ease; }
+        .sepia-mode { background-color: #1a1510; }
+        .sepia-mode .noise-bg { opacity: 0.1; mix-blend-mode: color-dodge; }
+        
+        #easter-egg-text { opacity: 0; transition: opacity 2s ease-in-out; pointer-events: none; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative">
+
+    <!-- Custom Cursor -->
+    <div id="custom-cursor" class="hidden md:block"></div>
+
+    <!-- Backgrounds -->
+    <div class="noise-bg"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Pantalla de Carga (Escáner) -->
+    <div id="loader">
+        <div class="scanner-line"></div>
+        <div class="z-10 text-center flex flex-col items-center">
+            <i class="ph-light ph-aperture text-5xl text-white mb-4 animate-[spin_4s_linear_infinite]"></i>
+            <h1 class="font-serif text-2xl text-slate-100 tracking-widest uppercase">Calibrando Herramientas</h1>
+            <p class="font-sans text-xs text-slate-500 tracking-[0.3em] uppercase mt-2">Iniciando Photoshop Workspace</p>
+        </div>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="fixed top-0 w-full z-40 p-6 mix-blend-difference flex justify-between items-center transition-opacity duration-500 opacity-0" id="main-nav">
+        <a href="#" class="text-lg font-serif font-bold tracking-widest text-white hover:text-slate-300 transition-colors flex items-center gap-2 group cursor-interactive" id="back-btn">
+            <i class="ph ph-arrow-left transition-transform group-hover:-translate-x-1"></i> Hub
+        </a>
+        <div class="text-xs font-sans tracking-[0.2em] text-white/50 uppercase">03 — Memoria</div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow flex flex-col relative z-10">
+        
+        <!-- Hero Section -->
+        <section class="min-h-screen flex flex-col items-center justify-center px-6 relative pt-24 pb-12">
+            
+            <div class="text-center max-w-3xl reveal mb-12">
+                <span class="inline-block py-1 px-3 rounded-full border border-white/10 text-xs font-sans tracking-[0.2em] text-slate-300 mb-6 uppercase bg-white/5 backdrop-blur-sm">
+                    Retoque Profesional
+                </span>
+                <h1 class="font-serif text-5xl md:text-7xl font-medium mb-6 leading-tight">
+                    El arte de recuperar<br>
+                    <span class="italic text-slate-400 font-light">el tiempo perdido.</span>
+                </h1>
+                <p class="font-sans text-slate-400 text-lg font-light leading-relaxed max-w-xl mx-auto">
+                    Sin filtros automáticos. Restauramos tus fotografías antiguas con paciencia, precisión y dominio absoluto de Photoshop. Devolvemos el color, reparamos los daños y preservamos la esencia.
+                </p>
+            </div>
+
+            <!-- Before/After Slider Component -->
+            <div class="w-full px-4 reveal delay-200">
+                <div class="comparison-container cursor-interactive" id="slider-container">
+                    
+                    <!-- Imagen Restaurada (Fondo) -->
+                    <!-- Nota: Se usa una imagen de alta calidad de Unsplash como demo -->
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1600&auto=format&fit=crop" alt="Foto Restaurada" class="image-after" draggable="false">
+                    
+                    <!-- Imagen Dañada (Encima, con clip-path) -->
+                    <div class="image-before-wrapper" id="before-wrapper">
+                        <!-- Aplicamos filtros CSS a la misma imagen para simular el daño de la época en esta demo -->
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1600&auto=format&fit=crop" alt="Foto Dañada" class="image-before" draggable="false">
+                        <div class="scratches-overlay"></div>
+                    </div>
+
+                    <!-- Controles -->
+                    <div class="slider-line" id="slider-line"></div>
+                    <div class="slider-button" id="slider-button">
+                        <i class="ph ph-arrows-left-right text-xl"></i>
+                    </div>
+
+                    <!-- Input Range (Invisible, captura el arrastre) -->
+                    <input type="range" min="0" max="100" value="50" class="comparison-slider" id="comparison-slider" aria-label="Comparar antes y después">
+                    
+                    <!-- Etiquetas -->
+                    <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded text-xs font-sans tracking-widest text-white uppercase border border-white/10 pointer-events-none">Original</div>
+                    <div class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded text-xs font-sans tracking-widest text-black font-semibold uppercase pointer-events-none">Restaurada</div>
+                </div>
+                <p class="text-center text-xs text-slate-500 mt-4 font-sans uppercase tracking-[0.2em] animate-pulse">Desliza para ver la restauración</p>
+            </div>
+
+        </section>
+
+        <!-- Especialidad Técnica (Features) -->
+        <section class="py-24 px-6 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="font-serif text-3xl md:text-4xl mb-4">Trabajo 100% Manual</h2>
+                    <p class="font-sans text-sm text-slate-400 uppercase tracking-widest">Lo que hacemos en el lienzo digital</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="border border-white/5 bg-white/[0.02] p-8 rounded-xl reveal cursor-interactive hover:bg-white/[0.05] transition-colors">
+                        <i class="ph-light ph-eyedropper text-3xl text-slate-200 mb-4"></i>
+                        <h3 class="font-serif text-xl mb-2">Colorización</h3>
+                        <p class="font-sans text-xs text-slate-400 leading-relaxed">
+                            No delegamos el color a algoritmos ciegos. Investigamos y pintamos cada capa históricamente precisa usando Photoshop.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="border border-white/5 bg-white/[0.02] p-8 rounded-xl reveal delay-100 cursor-interactive hover:bg-white/[0.05] transition-colors">
+                        <i class="ph-light ph-bandaids text-3xl text-slate-200 mb-4"></i>
+                        <h3 class="font-serif text-xl mb-2">Reparación de Daños</h3>
+                        <p class="font-sans text-xs text-slate-400 leading-relaxed">
+                            Uso maestro del tampón de clonar y parche para eliminar grietas, manchas de agua, humedad y rasgaduras profundas.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="border border-white/5 bg-white/[0.02] p-8 rounded-xl reveal delay-200 cursor-interactive hover:bg-white/[0.05] transition-colors">
+                        <i class="ph-light ph-faders text-3xl text-slate-200 mb-4"></i>
+                        <h3 class="font-serif text-xl mb-2">Contraste y Exposición</h3>
+                        <p class="font-sans text-xs text-slate-400 leading-relaxed">
+                            Ajuste de curvas y niveles en Camera Raw / Lightroom para recuperar detalles perdidos en sombras y zonas sobreexpuestas.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="border border-white/5 bg-white/[0.02] p-8 rounded-xl reveal delay-300 cursor-interactive hover:bg-white/[0.05] transition-colors">
+                        <i class="ph-light ph-frame-corners text-3xl text-slate-200 mb-4"></i>
+                        <h3 class="font-serif text-xl mb-2">Reconstrucción</h3>
+                        <p class="font-sans text-xs text-slate-400 leading-relaxed">
+                            Recreación manual de bordes faltantes o extremidades cortadas, fusionando texturas para que el resultado sea imperceptible.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Easter Egg Container -->
+        <div id="easter-egg-text" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 text-center w-full max-w-2xl px-4 hidden">
+            <p class="font-serif text-3xl md:text-4xl italic text-[#d97706] font-light leading-relaxed" style="text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+                "Lo único que Photoshop no puede inventar, es el sentimiento del momento en que se tomó la foto.<br>De eso te encargas tú."
+            </p>
+        </div>
+
+        <!-- CTA -->
+        <section class="py-32 px-6 flex flex-col items-center justify-center text-center relative mt-12 border-t border-white/5">
+            <div class="relative z-10 max-w-2xl reveal">
+                <i class="ph-light ph-image-square text-5xl text-white mb-6 opacity-80"></i>
+                <h2 class="font-serif text-4xl md:text-5xl mb-6">Salvemos tus recuerdos.</h2>
+                <p class="font-sans text-slate-400 mb-10 text-base">
+                    Envíanos tu fotografía escaneada (o tómale una buena foto con tu celular) y evaluaremos el daño para un retoque profesional.
+                </p>
+                <button class="btn-outline px-10 py-4 rounded-full font-sans text-sm tracking-[0.15em] uppercase cursor-interactive bg-[#030305]">
+                    Enviar Fotografía
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-8 text-center relative z-10 border-t border-white/5">
+        <p class="font-sans text-xs text-slate-600 tracking-widest uppercase">
+            &copy; <span id="year"></span> ThePixelar. Estudio de Retoque y Restauración.
+        </p>
+    </footer>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Loader Logic (Escáner)
+            const loader = document.getElementById('loader');
+            const nav = document.getElementById('main-nav');
+            
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    nav.style.opacity = '1';
+                    checkReveals(); // Trigger reveals después de cargar
+                }, 1500);
+            }, 2500); // Darle tiempo al escáner de hacer su trabajo
+
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // 2. Custom Cursor
+            const cursor = document.getElementById('custom-cursor');
+            const interactables = document.querySelectorAll('.cursor-interactive');
+            const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+            let mouseX = window.innerWidth / 2; let mouseY = window.innerHeight / 2;
+
+            if (isDesktop) {
+                let cursorX = mouseX; let cursorY = mouseY;
+                const easing = 0.2; 
+
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                });
+
+                function renderCursor() {
+                    cursorX += (mouseX - cursorX) * easing;
+                    cursorY += (mouseY - cursorY) * easing;
+                    cursor.style.transform = `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%)`;
+                    requestAnimationFrame(renderCursor);
+                }
+                renderCursor();
+
+                interactables.forEach(el => {
+                    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+                    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+                });
+            }
+
+            // 3. Before/After Slider Logic
+            const slider = document.getElementById('comparison-slider');
+            const wrapper = document.getElementById('before-wrapper');
+            const line = document.getElementById('slider-line');
+            const button = document.getElementById('slider-button');
+
+            slider.addEventListener('input', (e) => {
+                const sliderValue = e.target.value;
+                // Ajustamos el clip-path del contenedor de la imagen "dañada"
+                wrapper.style.clipPath = `polygon(0 0, ${sliderValue}% 0, ${sliderValue}% 100%, 0 100%)`;
+                // Movemos la línea y el botón
+                line.style.left = `${sliderValue}%`;
+                button.style.left = `${sliderValue}%`;
+            });
+
+            // 4. Scroll Reveal
+            const reveals = document.querySelectorAll('.reveal');
+            function checkReveals() {
+                const triggerBottom = window.innerHeight * 0.85;
+                reveals.forEach(reveal => {
+                    const revealTop = reveal.getBoundingClientRect().top;
+                    if(revealTop < triggerBottom) {
+                        reveal.classList.add('active');
+                    }
+                });
+            }
+            window.addEventListener('scroll', checkReveals);
+
+            // 5. Particle System (Efecto "Polvo" flotante)
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            // Estado para el Easter Egg
+            let easterEggMode = false;
+            let inactivityTimer;
+
+            function initCanvas() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                createParticles();
+            }
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.r = Math.random() * 1.5 + 0.2; // Polvo de diferentes tamaños
+                    
+                    // Movimiento browniano (estático temblando)
+                    this.vx = (Math.random() - 0.5) * 0.2;
+                    this.vy = (Math.random() - 0.5) * 0.2;
+                    
+                    this.opacity = Math.random() * 0.4 + 0.1;
+                    this.baseOpacity = this.opacity;
+                    this.color = Math.random() > 0.5 ? '#ffffff' : '#d97706'; // Blanco y Ámbar sutil
+                }
+                
+                update() {
+                    // Si no es el easter egg, permitimos que el cursor limpie el polvo
+                    if (!easterEggMode && isDesktop) {
+                        const dx = mouseX - this.x;
+                        const dy = mouseY - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Efecto de soplado (limpieza)
+                        if (distance < 100) {
+                            const force = (100 - distance) / 100;
+                            this.vx -= (dx / distance) * force * 0.5;
+                            this.vy -= (dy / distance) * force * 0.5;
+                            this.opacity = Math.max(0, this.opacity - 0.02); // Se desvanece
+                        } else {
+                            this.opacity = Math.min(this.baseOpacity, this.opacity + 0.005); // Recupera opacidad
+                        }
+                    }
+
+                    // Movimiento browniano natural
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // Fricción para que no aceleren infinitamente
+                    this.vx *= 0.98;
+                    this.vy *= 0.98;
+
+                    // Devolverlos a su velocidad base temblorosa si se detienen
+                    if(Math.abs(this.vx) < 0.1) this.vx += (Math.random() - 0.5) * 0.05;
+                    if(Math.abs(this.vy) < 0.1) this.vy += (Math.random() - 0.5) * 0.05;
+
+                    // Bordes
+                    if (this.x < 0) this.x = width;
+                    if (this.x > width) this.x = 0;
+                    if (this.y < 0) this.y = height;
+                    if (this.y > height) this.y = 0;
+                }
+                
+                draw() {
+                    ctx.globalAlpha = easterEggMode ? this.opacity * 0.3 : this.opacity; // Menos visibles en Easter Egg
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function createParticles() {
+                particles = [];
+                const numParticles = isDesktop ? 150 : 50; // Mucho polvo sutil
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            function animateParticles() {
+                // Rastro mínimo para que parezcan motas de polvo estáticas
+                ctx.clearRect(0, 0, width, height);
+
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animateParticles);
+            }
+
+            window.addEventListener('resize', () => {
+                clearTimeout(window.resizeTimer);
+                window.resizeTimer = setTimeout(initCanvas, 200);
+            });
+
+            initCanvas();
+            animateParticles();
+
+            // 6. Easter Egg Logic (Nostalgia Sepia)
+            const easterEggText = document.getElementById('easter-egg-text');
+            const mainContent = document.querySelector('main');
+            
+            function resetInactivityTimer() {
+                clearTimeout(inactivityTimer);
+                
+                if (easterEggMode) {
+                    easterEggMode = false;
+                    document.body.classList.remove('sepia-mode');
+                    easterEggText.style.opacity = '0';
+                    setTimeout(() => { easterEggText.classList.add('hidden'); }, 2000);
+                    mainContent.style.opacity = '1';
+                    mainContent.style.filter = 'none';
+                }
+
+                // Iniciar contador: 45 segundos = 45000ms. 
+                // Para probarlo ahora en el preview, lo dejo en 15 segundos (15000ms).
+                inactivityTimer = setTimeout(triggerEasterEgg, 15000); 
+            }
+
+            function triggerEasterEgg() {
+                easterEggMode = true;
+                
+                // Aplicar tema sepia global y oscurecer interfaz
+                document.body.classList.add('sepia-mode');
+                mainContent.style.transition = 'all 3s ease';
+                mainContent.style.opacity = '0.05';
+                mainContent.style.filter = 'sepia(100%) blur(5px)';
+                
+                // Mostrar frase emocional
+                easterEggText.classList.remove('hidden');
+                setTimeout(() => { easterEggText.style.opacity = '1'; }, 100);
+            }
+
+            // Eventos para reiniciar el timer
+            ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, resetInactivityTimer, { passive: true });
+            });
+
+            resetInactivityTimer();
+
+            // 7. Back Transition (Simulación)
+            const backBtn = document.getElementById('back-btn');
+            if(backBtn) {
+                backBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.body.style.transition = 'opacity 0.8s ease';
+                    document.body.style.opacity = '0';
+                    setTimeout(() => {
+                        console.log("Volviendo al Hub...");
+                        // window.location.href = 'index.html';
+                        setTimeout(() => { document.body.style.opacity = '1'; }, 500); 
+                    }, 800);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,97 @@
+```html
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth bg-[#030305] text-slate-100 selection:bg-[#00e5ff] selection:text-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Mí | ThePixelar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { cursor: none; background: #030305; }
+        .gif-sync {
+            filter: contrast(1.1) brightness(0.9) saturate(1.2) sepia(0.2) hue-rotate(190deg);
+            mix-blend-mode: screen;
+            transition: all 0.8s ease;
+        }
+        .hero-container:hover .gif-sync {
+            filter: contrast(1.2) brightness(1) saturate(1.5) sepia(0) hue-rotate(0deg);
+            mix-blend-mode: normal;
+        }
+        .glass {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 229, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="font-sans">
+
+    <!-- Cursor Personalizado -->
+    <div id="cursor" class="fixed w-6 h-6 border border-[#00e5ff] rounded-full pointer-events-none z-50 transition-transform duration-75 ease-out"></div>
+
+    <main>
+        <!-- Sección Hero con el GIF integrado -->
+        <section class="hero-container relative h-screen w-full flex items-center justify-center overflow-hidden">
+            <!-- Capa de partículas de fondo -->
+            <div id="particles" class="absolute inset-0 z-0"></div>
+
+            <!-- GIF Integrado como textura viva -->
+            <div class="relative z-10 w-full h-full flex items-center justify-center p-10">
+                <img src="img/yo.gif" alt="Alfredo" class="gif-sync w-[80%] max-w-2xl opacity-60 hover:opacity-100 transition-opacity duration-1000 object-cover">
+            </div>
+
+            <!-- Panel Glass con historia -->
+            <div class="glass absolute bottom-20 left-10 md:left-20 p-8 rounded-xl max-w-lg z-20">
+                <h1 class="text-4xl font-serif text-[#00e5ff] mb-4">Detrás del Píxel.</h1>
+                <p class="text-lg leading-relaxed text-slate-300">
+                    No soy una agencia. Soy Alfredo. Transformo bits en emociones. 
+                    Mi obsesión es crear experiencias que no solo se vean, sino que se sientan.
+                </p>
+            </div>
+        </section>
+
+        <!-- Sección de Filosofía -->
+        <section class="py-32 px-10 text-center">
+            <h2 class="text-5xl font-serif mb-12">La tecnología cambia, <span class="text-[#00e5ff]">la emoción permanece.</span></h2>
+            <div class="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+                <div class="p-8 border border-white/10 hover:border-[#00e5ff] transition-colors rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Diseño</h3>
+                    <p class="text-slate-400">Estética que respira y comunica.</p>
+                </div>
+                <div class="p-8 border border-white/10 hover:border-[#00e5ff] transition-colors rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">Código</h3>
+                    <p class="text-slate-400">Precisión técnica, fluidez absoluta.</p>
+                </div>
+                <div class="p-8 border border-white/10 hover:border-[#00e5ff] transition-colors rounded-lg">
+                    <h3 class="text-xl font-bold mb-4">IA</h3>
+                    <p class="text-slate-400">Automatización con propósito humano.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Cursor Follow
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // Simulación de partículas simples (JS nativo)
+        const particles = document.getElementById('particles');
+        for(let i=0; i<50; i++) {
+            const p = document.createElement('div');
+            p.className = 'absolute bg-[#00e5ff] rounded-full';
+            p.style.width = Math.random() * 3 + 'px';
+            p.style.height = p.style.width;
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.opacity = Math.random() * 0.5;
+            particles.appendChild(p);
+        }
+    </script>
+</body>
+</html>
+
+```
