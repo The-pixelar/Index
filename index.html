@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth bg-[#030305] text-slate-100 overflow-hidden selection:bg-[var(--accent)] selection:text-black">
 <head>
@@ -15,12 +14,12 @@
     <link rel="apple-touch-icon" href="img/PX.png">
     <meta property="og:title" content="The PixelAR | Diseño de Emociones">
     <meta property="og:image" content="img/PX.png">
-    <meta name="description" content="No somos una agencia convencional. Diseñamos experiencias digitales y emociones que perduran en el tiempo.">
+    <meta name="description" content="No somos una agencia convencional. Diseñamos entornos, experiencias digitales y emociones que perduran en el tiempo.">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     
     <!-- Iconos Phosphor -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -34,12 +33,14 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Playfair Display', 'serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
                         'blob': 'blob 10s infinite alternate',
-                        'ring-pulse': 'ringPulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'rainbow': 'rainbow 5s linear infinite',
+                        'rainbow': 'rainbow 4s linear infinite',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glitch': 'glitch 1s linear infinite',
                     },
                     keyframes: {
                         float: {
@@ -50,13 +51,18 @@
                             '0%': { transform: 'translate(0px, 0px) scale(1)' },
                             '100%': { transform: 'translate(20px, -30px) scale(1.1)' }
                         },
-                        ringPulse: {
-                            '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
-                            '50%': { opacity: '0.8', transform: 'scale(1.05)' },
-                        },
                         rainbow: {
                             '0%': { backgroundPosition: '0% 50%' },
                             '100%': { backgroundPosition: '200% 50%' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '1', transform: 'scale(1)', filter: 'brightness(1)' },
+                            '50%': { opacity: '.8', transform: 'scale(1.05)', filter: 'brightness(1.5)' },
+                        },
+                        glitch: {
+                            '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                            '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                            '62%': { transform: 'translate(0,0) skew(5deg)' },
                         }
                     }
                 }
@@ -69,17 +75,19 @@
         
         /* === SISTEMA DE TEMAS DINÁMICOS === */
         :root {
-            /* Tema por defecto (Elegante/Neón) */
             --accent: #00e5ff;
             --accent-glow: rgba(0, 229, 255, 0.5);
             --gradient-text: linear-gradient(to right, #00e5ff, #b026ff, #00e5ff);
+            --card-hover-border: rgba(255, 255, 255, 0.2);
         }
 
-        /* Tema Pride (Se activa con JS en Junio automáticamente) */
+        /* Tema Pride Mejorado (Se activa con JS en Junio) */
         .theme-pride {
             --accent: #ff007f;
-            --accent-glow: rgba(255, 0, 127, 0.6);
-            --gradient-text: linear-gradient(to right, #ff0018, #ffa52c, #ffff41, #008018, #0000f9, #86007d, #ff0018);
+            --accent-glow: rgba(255, 0, 127, 0.8);
+            /* Gradiente de arcoíris súper vibrante */
+            --gradient-text: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
+            --card-hover-border: rgba(255, 0, 127, 0.5);
         }
 
         .dynamic-gradient-text {
@@ -88,7 +96,8 @@
             color: transparent;
             -webkit-background-clip: text;
             background-clip: text;
-            animation: rainbow 6s linear infinite;
+            animation: rainbow 4s linear infinite; /* Animación más rápida para Pride */
+            font-weight: bold;
         }
 
         .glass {
@@ -111,7 +120,7 @@
         
         .portal-card:hover {
             box-shadow: 0 30px 60px -15px var(--accent-glow);
-            border-color: rgba(255, 255, 255, 0.2);
+            border-color: var(--card-hover-border);
             z-index: 10;
         }
 
@@ -129,7 +138,16 @@
         }
         
         .portal-card:hover::before {
-            opacity: 0.15;
+            opacity: 0.2; /* Más brillante en hover */
+        }
+
+        /* Botón de Descubrir (Sales UX) */
+        .discover-btn {
+            transition: all 0.3s ease;
+        }
+        .portal-card:hover .discover-btn {
+            transform: translateX(10px);
+            text-shadow: 0 0 10px currentColor;
         }
 
         /* Animación Revelación de Textos */
@@ -145,13 +163,58 @@
             transform: translateY(0);
         }
 
-        /* Anillos del Easter Egg */
-        .ring {
+        /* Typewriter Cursor */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            background-color: var(--accent);
+            animation: blink 1s step-end infinite;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            height: 1em;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Glitch Text for Easter Egg */
+        .glitch-text {
+            position: relative;
+            color: white;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
             position: absolute;
-            width: 150px; height: 150px;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 30px var(--accent-glow), inset 0 0 20px var(--accent-glow);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 red;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 blue;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        /* CTA Flotante UX/UI */
+        .cta-float {
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cta-float:hover {
+            box-shadow: 0 0 40px var(--accent-glow);
+            transform: translateY(-5px) scale(1.05);
+        }
+        .theme-pride .cta-float {
+            background: var(--gradient-text);
+            background-size: 200% auto;
+            border: none;
         }
     </style>
 </head>
@@ -159,44 +222,51 @@
 
     <!-- 🎵 Música de Fondo -->
     <audio id="bgMusic" loop src="img/song.mp3"></audio>
-    <button id="music-toggle" class="fixed bottom-6 right-6 z-[90] p-4 rounded-full glass text-white/70 hover:text-white transition-all duration-300 hidden group shadow-lg">
-        <i id="music-icon" class="ph ph-speaker-high text-2xl group-hover:scale-110 transition-transform"></i>
-    </button>
+    <div class="fixed bottom-6 right-6 z-[90] flex flex-col items-end gap-4">
+        
+        <!-- Botón Música -->
+        <button id="music-toggle" class="p-4 rounded-full glass text-white/70 hover:text-white transition-all duration-300 hidden group shadow-lg">
+            <i id="music-icon" class="ph ph-speaker-high text-2xl group-hover:scale-110 transition-transform"></i>
+        </button>
 
-    <!-- Canvas de Fondo Global (El Lienzo Mágico) -->
+        <!-- CTA Ventas: Iniciar Proyecto -->
+        <button onclick="openPortal('sobre-mi-contacto.html', 'Iniciar Proyecto')" class="cta-float group flex items-center gap-3 px-6 py-4 rounded-full bg-[var(--accent)] text-black font-semibold tracking-wide border border-white/20 hidden" id="cta-button">
+            <span class="uppercase text-sm">Hablemos de tu idea</span>
+            <i class="ph-bold ph-rocket-launch text-xl group-hover:animate-pulse"></i>
+        </button>
+
+    </div>
+
+    <!-- Canvas de Fondo Global -->
     <canvas id="ambient-canvas" class="fixed inset-0 z-0 opacity-40 pointer-events-none"></canvas>
 
     <!-- Orbes de luz de fondo (dinámicos) -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[var(--accent)] rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-blob"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-blob" style="animation-delay: 2s;"></div>
+        <div id="orb-1" class="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[var(--accent)] rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-blob"></div>
+        <div id="orb-2" class="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-600 rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-blob" style="animation-delay: 2s;"></div>
     </div>
 
     <!-- ========================================== -->
     <!-- 1. INTRODUCCIÓN DRAMÁTICA Y EMOCIONAL      -->
     <!-- ========================================== -->
     <div id="intro-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#030305] overflow-hidden">
-        <!-- Canvas de Partículas Interactivas -->
         <canvas id="intro-particles" class="absolute inset-0 z-0"></canvas>
         
         <div class="relative z-10 text-center px-6 flex flex-col items-center w-full max-w-4xl">
-            <!-- Logo Flotante -->
             <div id="intro-logo" class="w-20 h-20 md:w-24 md:h-24 mb-12 flex items-center justify-center opacity-0 transform translate-y-8 transition-all duration-1000 ease-out drop-shadow-[0_0_15px_var(--accent-glow)]">
                 <img src="img/PX.png" alt="PX" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <i class="ph ph-sparkle text-4xl text-[var(--accent)] hidden"></i>
             </div>
             
-            <!-- Textos Dramáticos Secuenciales -->
             <div class="relative h-24 md:h-32 w-full flex items-center justify-center mb-12">
                 <h2 id="text-seq-1" class="absolute text-2xl md:text-4xl font-light tracking-widest text-slate-400 text-reveal uppercase">
                     No somos una agencia.
                 </h2>
-                <h1 id="text-seq-2" class="absolute text-4xl md:text-6xl lg:text-7xl font-serif font-semibold text-reveal dynamic-gradient-text">
-                    Diseñamos emociones que perduran.
+                <h1 id="text-seq-2" class="absolute text-4xl md:text-6xl lg:text-7xl font-serif font-semibold text-reveal dynamic-gradient-text px-4 text-center leading-tight">
+                    Diseñamos emociones.
                 </h1>
             </div>
 
-            <!-- Botón Mágico -->
             <button id="enter-btn" class="group relative px-10 py-4 bg-transparent overflow-hidden rounded-full transition-all duration-1000 transform translate-y-8 opacity-0">
                 <div class="absolute inset-0 w-full h-full border border-white/20 rounded-full group-hover:border-[var(--accent)] transition-colors duration-500"></div>
                 <div class="absolute inset-0 w-full h-full bg-[var(--accent)]/0 group-hover:bg-[var(--accent)]/10 transition-colors duration-500 blur-sm"></div>
@@ -207,105 +277,110 @@
             </button>
         </div>
         
-        <!-- Flash de Explosión (Efecto Wow de transición) -->
         <div id="intro-flash" class="absolute inset-0 bg-white z-50 opacity-0 pointer-events-none scale-0 rounded-full transition-all duration-[1.2s] ease-in-out origin-center"></div>
     </div>
 
     <!-- ========================================== -->
-    <!-- 2. EL LIENZO PRINCIPAL (Hub de Emociones)  -->
+    <!-- 2. EL LIENZO PRINCIPAL (Hub de Servicios)  -->
     <!-- ========================================== -->
     <div id="view-hub" class="absolute inset-0 z-10 opacity-0 pointer-events-none transition-opacity duration-1000 ease-out overflow-y-auto overflow-x-hidden">
         
-        <!-- Navbar Minimalista e Invisible -->
+        <!-- Navbar -->
         <nav class="fixed w-full z-40 top-0 transition-all duration-300" id="main-nav">
             <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <img src="img/PX.png" alt="PX" class="w-8 h-8 object-contain drop-shadow-[0_0_10px_var(--accent-glow)]" onerror="this.style.display='none';">
-                    <span class="font-serif font-semibold text-xl tracking-wide text-white">The PixelAR</span>
+                    <span class="font-display font-bold text-xl tracking-wide text-white">THE PIXELAR</span>
                 </div>
-                <div id="pride-badge" class="hidden items-center gap-2 px-4 py-2 rounded-full glass text-xs font-medium tracking-widest uppercase dynamic-gradient-text border border-white/10 shadow-[0_0_15px_rgba(255,0,127,0.2)]">
-                    <i class="ph-fill ph-rainbow"></i> Pride Month
+                <div id="pride-badge" class="hidden items-center gap-2 px-5 py-2 rounded-full glass text-xs font-bold tracking-widest uppercase text-white shadow-[0_0_20px_rgba(255,0,127,0.4)] border border-white/20 overflow-hidden relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 opacity-20"></div>
+                    <i class="ph-fill ph-rainbow text-lg relative z-10"></i> 
+                    <span class="relative z-10">Pride Month</span>
                 </div>
             </div>
         </nav>
 
-        <main class="relative z-10 min-h-screen flex flex-col pt-32 pb-24 max-w-7xl mx-auto px-6 justify-center">
-            <div class="text-center max-w-4xl mx-auto mb-20 animate-float">
-                <h2 class="text-5xl md:text-7xl font-serif font-semibold mb-6 leading-tight">
-                    El Arte de <br class="hidden md:block">
-                    <span class="dynamic-gradient-text">Crear Recuerdos</span>
+        <main class="relative z-10 min-h-screen flex flex-col pt-32 pb-32 max-w-7xl mx-auto px-6 justify-center">
+            
+            <!-- HEADER DINÁMICO (Typewriter Effect) -->
+            <div class="text-center max-w-5xl mx-auto mb-20 animate-float">
+                <h2 class="text-4xl md:text-6xl lg:text-7xl font-serif font-semibold mb-6 leading-tight flex flex-col items-center justify-center">
+                    <span class="mb-2 text-white/90">El Arte de Crear</span>
+                    <div class="h-[1.2em] flex items-center justify-center overflow-visible">
+                        <span class="dynamic-gradient-text" id="typewriter-text"></span><span class="cursor"></span>
+                    </div>
                 </h2>
-                <p class="text-slate-400 text-lg md:text-xl font-light tracking-wide">
-                    Selecciona una dimensión para comenzar el viaje.
+                <p class="text-slate-400 text-lg md:text-xl font-light tracking-wide max-w-2xl mx-auto">
+                    Diseñamos entornos, emociones y sistemas inteligentes. Selecciona una dimensión para comenzar tu transformación.
                 </p>
             </div>
 
-            <!-- 🗂️ GRID DE DIMENSIONES (Efecto 3D Hover) -->
+            <!-- 🗂️ GRID DE SERVICIOS (Sales UX) -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto w-full">
                 
                 <!-- 1. Invitaciones -->
                 <div class="portal-card-wrapper">
-                    <button onclick="openPortal('invitacion.html', 'Invitaciones Premium')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
+                    <button onclick="openPortal('invitacion.html', 'Invitaciones Premium')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
                         <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
                         <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mb-8 drop-shadow-[0_0_10px_var(--accent-glow)]">
+                            <div class="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 flex items-center justify-center mb-8 shadow-[0_0_15px_var(--accent-glow)]">
                                 <i class="ph ph-envelope-open text-3xl text-[var(--accent)]"></i>
                             </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Invitaciones Digitales</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Experiencias cinematográficas que enamoran a tus invitados antes del gran día.</p>
-                            <div class="text-xs font-medium text-[var(--accent)] uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Invitaciones Digitales</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Experiencias cinematográficas y pases digitales que enamoran a tus invitados antes del gran día.</p>
+                            <div class="discover-btn text-xs font-bold text-[var(--accent)] uppercase tracking-[0.2em] flex items-center gap-3">
+                                Ver Experiencias <i class="ph ph-arrow-right text-lg"></i>
                             </div>
                         </div>
                     </button>
                 </div>
 
-                <!-- 2. Restauración -->
+                <!-- 2. IA -->
                 <div class="portal-card-wrapper">
-                    <button onclick="openPortal('restauracion.html', 'Restauración Fotográfica')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
+                    <button onclick="openPortal('inteligencia-artificial.html', 'Inteligencia Artificial')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
                         <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
                         <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8">
-                                <i class="ph ph-image-square text-3xl text-slate-300"></i>
-                            </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Restauración</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Revivimos la magia de tus fotos antiguas con retoque artesanal y amor al detalle.</p>
-                            <div class="text-xs font-medium text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- 3. Inteligencia Artificial -->
-                <div class="portal-card-wrapper">
-                    <button onclick="openPortal('inteligencia-artificial.html', 'Inteligencia Artificial')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
-                        <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
-                        <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 flex items-center justify-center mb-8 drop-shadow-[0_0_10px_rgba(139,92,246,0.3)]">
+                            <div class="w-16 h-16 rounded-full bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
                                 <i class="ph ph-brain text-3xl text-[#8b5cf6]"></i>
                             </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Sistemas IA</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Agentes generativos y el cerebro digital interactivo de tu marca.</p>
-                            <div class="text-xs font-medium text-[#8b5cf6] uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Sistemas IA</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Agentes generativos, chatbots y el cerebro digital interactivo que escala las ventas de tu marca.</p>
+                            <div class="discover-btn text-xs font-bold text-[#8b5cf6] uppercase tracking-[0.2em] flex items-center gap-3">
+                                Potenciar Marca <i class="ph ph-arrow-right text-lg"></i>
                             </div>
                         </div>
                     </button>
                 </div>
 
-                <!-- 4. Automatización -->
+                <!-- 3. Automatización -->
                 <div class="portal-card-wrapper">
-                    <button onclick="openPortal('automatizacion.html', 'Automatización')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
+                    <button onclick="openPortal('automatizacion.html', 'Automatización')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
                         <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
                         <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-[#f97316]/10 border border-[#f97316]/20 flex items-center justify-center mb-8 drop-shadow-[0_0_10px_rgba(249,115,22,0.3)]">
-                                <i class="ph ph-gear-six text-3xl text-[#f97316]"></i>
+                            <div class="w-16 h-16 rounded-full bg-[#f97316]/10 border border-[#f97316]/30 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                                <i class="ph ph-lightning text-3xl text-[#f97316]"></i>
                             </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Automatización</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Eliminamos lo repetitivo para que te enfoques en lo que realmente importa.</p>
-                            <div class="text-xs font-medium text-[#f97316] uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Automatización</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Simplifica la gestión operativa. Eliminamos lo repetitivo para que te enfoques en crecer tu negocio.</p>
+                            <div class="discover-btn text-xs font-bold text-[#f97316] uppercase tracking-[0.2em] flex items-center gap-3">
+                                Simplificar Procesos <i class="ph ph-arrow-right text-lg"></i>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 4. Restauración -->
+                <div class="portal-card-wrapper">
+                    <button onclick="openPortal('restauracion.html', 'Restauración Fotográfica')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
+                        <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
+                        <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
+                            <div class="w-16 h-16 rounded-full bg-slate-300/10 border border-slate-300/30 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                <i class="ph ph-image-square text-3xl text-slate-300"></i>
+                            </div>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Restauración</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Revivimos la magia de tus fotos y reliquias antiguas con retoque artesanal y amor al detalle.</p>
+                            <div class="discover-btn text-xs font-bold text-slate-300 uppercase tracking-[0.2em] flex items-center gap-3">
+                                Rescatar Memorias <i class="ph ph-arrow-right text-lg"></i>
                             </div>
                         </div>
                     </button>
@@ -313,16 +388,16 @@
 
                 <!-- 5. Pixel Lab -->
                 <div class="portal-card-wrapper">
-                    <button onclick="openPortal('pixel-lab.html', 'Pixel Lab')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
-                        <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0 border border-dashed border-white/5"></div>
+                    <button onclick="openPortal('pixel-lab.html', 'Pixel Lab')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
+                        <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0 border border-dashed border-white/10"></div>
                         <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-[#00ff41]/10 border border-[#00ff41]/20 flex items-center justify-center mb-8">
+                            <div class="w-16 h-16 rounded-full bg-[#00ff41]/10 border border-[#00ff41]/30 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(0,255,65,0.3)]">
                                 <i class="ph ph-flask text-3xl text-[#00ff41]"></i>
                             </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Pixel Lab</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Laboratorio experimental. WebGL y diseño brutalista sin reglas.</p>
-                            <div class="text-xs font-medium text-[#00ff41] uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Pixel Lab</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Nuestro laboratorio experimental. Diseños web brutales, WebGL y entornos inmersivos sin reglas.</p>
+                            <div class="discover-btn text-xs font-bold text-[#00ff41] uppercase tracking-[0.2em] flex items-center gap-3">
+                                Entrar al Laboratorio <i class="ph ph-arrow-right text-lg"></i>
                             </div>
                         </div>
                     </button>
@@ -330,65 +405,138 @@
 
                 <!-- 6. Sobre Mí -->
                 <div class="portal-card-wrapper">
-                    <button onclick="openPortal('sobre-mi-contacto.html', 'El Creador')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full">
+                    <button onclick="openPortal('sobre-mi-contacto.html', 'El Creador')" class="portal-card relative rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-left w-full h-full group">
                         <div class="absolute inset-[1px] bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[15px] z-0"></div>
                         <div class="relative z-10 p-8 flex flex-col h-full pointer-events-none">
-                            <div class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-8">
-                                <i class="ph ph-user-focus text-3xl text-slate-300"></i>
+                            <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/30 flex items-center justify-center mb-8 shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                                <i class="ph ph-user-focus text-3xl text-pink-400"></i>
                             </div>
-                            <h3 class="text-2xl font-serif font-semibold mb-3 text-white">Sobre el Creador</h3>
-                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">La mente humana e historia detrás de este lienzo tecnológico.</p>
-                            <div class="text-xs font-medium text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                                Descubrir <i class="ph ph-arrow-right"></i>
+                            <h3 class="text-2xl font-display font-bold mb-3 text-white">Contacto & Agencia</h3>
+                            <p class="text-sm text-slate-400 mb-8 flex-grow font-light leading-relaxed">Conoce la historia detrás de este lienzo tecnológico y comencemos a trabajar en tu próximo éxito.</p>
+                            <div class="discover-btn text-xs font-bold text-pink-400 uppercase tracking-[0.2em] flex items-center gap-3">
+                                Conocer al Equipo <i class="ph ph-arrow-right text-lg"></i>
                             </div>
                         </div>
                     </button>
                 </div>
 
             </div>
+
+            <!-- ========================================== -->
+            <!-- FOOTER & CONTACTO DIRECTO                  -->
+            <!-- ========================================== -->
+            <footer class="w-full max-w-6xl mx-auto mt-24 mb-8 relative z-20 animate-float" style="animation-duration: 8s;">
+                <div class="glass rounded-3xl p-8 flex flex-col lg:flex-row items-center justify-between gap-10 border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.3)] relative overflow-hidden">
+                    <!-- Brillo de fondo sutil -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-[var(--accent)]/5 to-transparent pointer-events-none"></div>
+
+                    <!-- Bloque de Contactos -->
+                    <div class="flex flex-col md:flex-row gap-8 items-center md:items-start relative z-10 w-full lg:w-auto">
+                        
+                        <!-- Email -->
+                        <a href="mailto:alfredo.vazquez@thepixelar.com" class="group flex flex-col items-center md:items-start gap-2 text-slate-300 hover:text-[var(--accent)] transition-all duration-300">
+                            <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[var(--accent)]/20 group-hover:shadow-[0_0_20px_var(--accent-glow)] transition-all duration-300 border border-white/5 group-hover:border-[var(--accent)]/50">
+                                <i class="ph ph-paper-plane-tilt text-2xl group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                            <div class="flex flex-col items-center md:items-start">
+                                <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Correo Electrónico</span>
+                                <span class="text-sm font-medium tracking-wide">alfredo.vazquez@thepixelar.com</span>
+                            </div>
+                        </a>
+
+                        <div class="hidden md:block w-px h-16 bg-white/10"></div>
+
+                        <!-- Teléfonos -->
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <!-- Línea 1 -->
+                            <div class="group flex flex-col items-center sm:items-start gap-2">
+                                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-300 group-hover:bg-[#25D366]/20 group-hover:shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all duration-300 border border-white/5 group-hover:border-[#25D366]/50">
+                                    <i class="ph ph-device-mobile text-2xl group-hover:animate-pulse"></i>
+                                </div>
+                                <div class="flex flex-col items-center sm:items-start">
+                                    <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Línea Principal</span>
+                                    <div class="flex gap-3 items-center">
+                                        <a href="tel:+524491920474" class="text-sm font-medium text-slate-300 hover:text-white transition-colors" title="Llamar">449 192 0474</a>
+                                        <a href="https://wa.me/524491920474" target="_blank" class="text-xs font-bold text-[#25D366] hover:text-white transition-colors flex items-center gap-1 bg-[#25D366]/10 px-2 py-1 rounded-full border border-[#25D366]/30 hover:bg-[#25D366]" title="Enviar WhatsApp">
+                                            <i class="ph-fill ph-whatsapp text-sm"></i> WA
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Línea 2 -->
+                            <div class="group flex flex-col items-center sm:items-start gap-2">
+                                <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-300 group-hover:bg-[#25D366]/20 group-hover:shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all duration-300 border border-white/5 group-hover:border-[#25D366]/50">
+                                    <i class="ph ph-phone-call text-2xl group-hover:animate-pulse"></i>
+                                </div>
+                                <div class="flex flex-col items-center sm:items-start">
+                                    <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Línea Secundaria</span>
+                                    <div class="flex gap-3 items-center">
+                                        <a href="tel:+524425485993" class="text-sm font-medium text-slate-300 hover:text-white transition-colors" title="Llamar">442 548 5993</a>
+                                        <a href="https://wa.me/524425485993" target="_blank" class="text-xs font-bold text-[#25D366] hover:text-white transition-colors flex items-center gap-1 bg-[#25D366]/10 px-2 py-1 rounded-full border border-[#25D366]/30 hover:bg-[#25D366]" title="Enviar WhatsApp">
+                                            <i class="ph-fill ph-whatsapp text-sm"></i> WA
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Copyright Luis Alfredo -->
+                    <div class="text-center lg:text-right flex flex-col gap-2 relative z-10 mt-6 lg:mt-0 border-t lg:border-t-0 border-white/10 pt-6 lg:pt-0 w-full lg:w-auto">
+                        <img src="img/PX.png" alt="PX" class="w-10 h-10 object-contain mx-auto lg:mx-0 lg:ml-auto mb-1 drop-shadow-[0_0_10px_var(--accent-glow)]" onerror="this.style.display='none';">
+                        <h4 class="text-sm font-display font-bold text-white tracking-wide">THE PIXELAR LAB</h4>
+                        <p class="text-xs text-slate-400 font-light">&copy; <script>document.write(new Date().getFullYear())</script> Todos los derechos reservados.</p>
+                        <div class="inline-flex items-center justify-center lg:justify-end gap-2 mt-1">
+                            <span class="text-[10px] text-[var(--accent)] uppercase tracking-[0.2em] font-bold">Diseñado y creado por Luis Alfredo Vázquez</span>
+                            <i class="ph-fill ph-seal-check text-[var(--accent)] text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
         </main>
     </div>
 
     <!-- ========================================== -->
     <!-- 3. CÁMARA DE INMERSIÓN (Modal iframe)      -->
     <!-- ========================================== -->
-    <div id="os-window-wrapper" class="fixed inset-0 z-50 hidden opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    <div id="os-window-wrapper" class="fixed inset-0 z-[110] hidden opacity-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
         <div class="absolute inset-0 bg-[#030305]/95 backdrop-blur-2xl" onclick="closePortal()"></div>
         
         <div id="os-window" class="absolute inset-0 md:inset-6 lg:inset-10 md:rounded-3xl border border-white/10 bg-[#030305] shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden transform scale-95 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
             
-            <!-- Encabezado Flotante -->
             <div class="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex items-center gap-4">
-                <div class="hidden md:flex px-4 py-2 rounded-full glass border border-white/10 shadow-lg">
-                    <span id="os-window-title" class="text-xs uppercase tracking-widest text-slate-300 font-medium dynamic-gradient-text">Experiencia en curso</span>
+                <div class="hidden md:flex px-5 py-2 rounded-full glass border border-white/10 shadow-lg">
+                    <span id="os-window-title" class="text-xs uppercase tracking-widest text-slate-300 font-bold dynamic-gradient-text">Experiencia en curso</span>
                 </div>
                 <button onclick="closePortal()" class="w-12 h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors duration-300 shadow-lg group">
                     <i class="ph ph-x text-xl group-hover:rotate-90 transition-transform duration-300"></i>
                 </button>
             </div>
 
-            <!-- Contenedor iframe -->
             <div class="relative flex-grow w-full h-full bg-[#030305]">
                 <div id="iframe-loader" class="absolute inset-0 flex flex-col items-center justify-center z-0">
-                    <i class="ph ph-sparkle animate-pulse text-4xl text-[var(--accent)] mb-4"></i>
-                    <p class="text-xs tracking-[0.2em] text-slate-400 uppercase">Tejiendo píxeles...</p>
+                    <i class="ph ph-spinner-gap animate-spin text-4xl text-[var(--accent)] mb-4"></i>
+                    <p class="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">Cargando Entorno...</p>
                 </div>
-                <iframe id="portal-iframe" class="w-full h-full border-none relative z-10 opacity-0 transition-opacity duration-1000" src=""></iframe>
+                <iframe id="portal-iframe" class="w-full h-full border-none relative z-10 opacity-0 transition-opacity duration-1000 bg-transparent" src=""></iframe>
             </div>
         </div>
     </div>
 
     <!-- ========================================== -->
-    <!-- 4. EASTER EGG EMOCIONAL (Inactividad 45s)  -->
+    <!-- 4. EASTER EGG (Pixel P Animado - 45s)      -->
     <!-- ========================================== -->
-    <div id="easter-egg-overlay" class="fixed inset-0 z-[200] pointer-events-none flex flex-col items-center justify-center bg-[#030305]/95 backdrop-blur-xl opacity-0 transition-opacity duration-[3000ms] hidden">
-        <div class="relative w-64 h-40 mb-12 flex items-center justify-center">
-            <div class="ring absolute left-4 animate-ring-pulse" style="animation-delay: 0s;"></div>
-            <div class="ring absolute right-4 animate-ring-pulse" style="animation-delay: 1.5s;"></div>
-        </div>
-        <h2 class="font-serif text-3xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-300 to-white tracking-wide font-light text-center px-6 leading-relaxed max-w-4xl opacity-90">
-            "Las historias más bonitas<br><span class="text-[var(--accent)] italic">empiezan con una invitación.</span>"
+    <div id="easter-egg-overlay" class="fixed inset-0 z-[200] pointer-events-none flex flex-col items-center justify-center bg-[#030305]/95 backdrop-blur-xl opacity-0 transition-opacity duration-[2000ms] hidden">
+        
+        <!-- Canvas para las partículas de Píxeles -->
+        <canvas id="pixel-p-canvas" class="w-full max-w-[400px] h-[400px]"></canvas>
+        
+        <h2 class="font-display text-4xl md:text-6xl tracking-[0.2em] font-bold text-center mt-8 uppercase glitch-text" data-text="PIXELAR LAB">
+            PIXELAR LAB
         </h2>
+        <p class="text-[var(--accent)] tracking-[0.3em] uppercase text-xs mt-4 animate-pulse">Entorno en Reposo</p>
     </div>
 
     <!-- ========================================== -->
@@ -397,21 +545,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- 0. LÓGICA PRIDE MONTH AUTOMÁTICO (Wow Factor) ---
+            // --- 0. LÓGICA PRIDE MONTH AUTOMÁTICO (Junio) ---
             const currentMonth = new Date().getMonth(); // 0 = Enero, 5 = Junio
-            if (currentMonth === 5) {
+            let isPride = false;
+            let particleColorMode = '#00e5ff'; // Por defecto
+
+            // Para pruebas: puedes forzar el mes a 5 (Junio) para ver el arcoíris
+            if (currentMonth === 5 || document.documentElement.classList.contains('theme-pride')) {
+                isPride = true;
                 document.documentElement.classList.add('theme-pride');
                 document.getElementById('pride-badge').classList.remove('hidden');
                 document.getElementById('pride-badge').classList.add('flex');
+                particleColorMode = 'rainbow';
             }
-
-            // Para forzar la prueba y ver cómo se ve el arcoíris en cualquier mes, 
-            // descomenta la siguiente línea:
-            // document.documentElement.classList.add('theme-pride'); 
-
-            // Determinar color de las partículas basado en el tema
-            const isPride = document.documentElement.classList.contains('theme-pride');
-            const particleColor = isPride ? 'rainbow' : '#00e5ff';
 
 
             // --- 1. INTRODUCCIÓN DRAMÁTICA ---
@@ -421,61 +567,48 @@
             const viewHub = document.getElementById('view-hub');
             const bgMusic = document.getElementById('bgMusic');
             const musicToggle = document.getElementById('music-toggle');
+            const ctaButton = document.getElementById('cta-button');
             const musicIcon = document.getElementById('music-icon');
             let isMusicPlaying = false;
 
-            // Secuencia de Textos
-            setTimeout(() => {
-                document.getElementById('intro-logo').classList.remove('translate-y-8', 'opacity-0');
-            }, 300);
-
-            setTimeout(() => {
-                document.getElementById('text-seq-1').classList.add('active');
-            }, 1200);
+            setTimeout(() => { document.getElementById('intro-logo').classList.remove('translate-y-8', 'opacity-0'); }, 300);
+            setTimeout(() => { document.getElementById('text-seq-1').classList.add('active'); }, 1200);
 
             setTimeout(() => {
                 document.getElementById('text-seq-1').classList.remove('active');
                 setTimeout(() => {
                     document.getElementById('text-seq-2').classList.add('active');
-                    // Mostrar botón
-                    setTimeout(() => {
-                        enterBtn.classList.remove('translate-y-8', 'opacity-0');
-                    }, 800);
-                }, 800); // Esperar a que salga el texto 1
+                    setTimeout(() => { enterBtn.classList.remove('translate-y-8', 'opacity-0'); }, 800);
+                }, 800);
             }, 4000);
 
-            // Clic en Entrar (Efecto Piel Erizada)
             enterBtn.addEventListener('click', () => {
-                // Play Music
                 bgMusic.volume = 0.5;
                 bgMusic.play().then(() => {
                     isMusicPlaying = true;
                     musicToggle.classList.remove('hidden');
                 }).catch(e => console.log("Autoplay bloqueado"));
 
-                // Ocultar elementos actuales
                 document.getElementById('intro-logo').style.opacity = '0';
                 document.getElementById('text-seq-2').classList.remove('active');
                 enterBtn.style.opacity = '0';
 
-                // Disparar Explosión de Luz
                 setTimeout(() => {
                     introFlash.classList.remove('opacity-0', 'scale-0');
-                    introFlash.classList.add('opacity-100', 'scale-[300]'); // Escala masiva
+                    introFlash.classList.add('opacity-100', 'scale-[300]');
                     
                     setTimeout(() => {
                         introOverlay.style.display = 'none';
-                        // Mostrar Hub Suavemente
                         viewHub.classList.remove('opacity-0', 'pointer-events-none');
                         viewHub.classList.add('opacity-100', 'pointer-events-auto');
+                        ctaButton.classList.remove('hidden'); // Mostrar botón CTA
                         
-                        // Desvanecer flash
                         introFlash.style.opacity = '0';
+                        startTypewriter(); // Iniciar máquina de escribir
                     }, 1000);
                 }, 500);
             });
 
-            // Play/Pause Música
             musicToggle.addEventListener('click', () => {
                 if (isMusicPlaying) {
                     bgMusic.pause();
@@ -488,24 +621,74 @@
             });
 
 
-            // --- 2. EFECTO 3D HOVER (Tarjetas Premium) ---
+            // --- 2. EFECTO DE ESCRITURA (100 PALABRAS CLAVE) ---
+            const words = [
+                "Emociones", "Experiencias", "Entornos", "Sistemas", "Automatización", "Recuerdos", "Invitaciones", 
+                "Programas", "Conversiones", "Soluciones", "Ventas", "Identidad", "Chatbots", "Creatividad", 
+                "Resultados", "Restauración", "Magia", "Vínculos", "Páginas Web", "Plataformas", "Procesos", 
+                "Eficiencia", "Productividad", "IA", "Algoritmos", "Innovación", "Rendimiento", "Estética",
+                "Bodas", "Eventos", "Celebraciones", "Memorias", "Legado", "Arte Digital", "Diseños UI", 
+                "Estrategias", "Crecimiento", "Impacto", "Modernidad", "Vanguardia", "Evolución", "Transformación",
+                "Fidelidad", "Seguridad", "Velocidad", "Rentabilidad", "Campañas", "Interacciones", "Flujos", 
+                "Vectores", "Píxeles", "Modelos", "Sorpresas", "Momentos", "Sonrisas", "Historias", "Realidades", 
+                "Conexiones", "Proyectos", "Portafolios", "E-commerce", "Marcas", "Presencia", "RSVPs",
+                "Galas", "Aniversarios", "Reliquias", "Colores", "Detalles", "Vida", "Archivos", "Asistentes", 
+                "Prompts", "Datos", "Futuro", "WebGL", "Animaciones", "Interfaces", "Mapas", "Renderizados", 
+                "Tipografías", "Tráfico", "Leads", "Oportunidades", "Éxito", "Escalabilidad", "Optimizaciones", 
+                "Métricas", "Gestión", "Control", "Dinamismo", "Funcionalidad", "Confianza", "Revoluciones", 
+                "Embudos", "Experimentos", "Desarrollo", "Software", "Visión"
+            ];
+            
+            // Randomizar array para que no sea predecible
+            words.sort(() => Math.random() - 0.5);
+            
+            let wordIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+            let typeTimer;
+            const twElement = document.getElementById("typewriter-text");
+
+            function startTypewriter() {
+                const currentWord = words[wordIndex];
+                
+                if (isDeleting) {
+                    twElement.textContent = currentWord.substring(0, charIndex - 1);
+                    charIndex--;
+                } else {
+                    twElement.textContent = currentWord.substring(0, charIndex + 1);
+                    charIndex++;
+                }
+
+                let typingSpeed = isDeleting ? 40 : 100;
+
+                if (!isDeleting && charIndex === currentWord.length) {
+                    typingSpeed = 2000; // Pausa al completar la palabra
+                    isDeleting = true;
+                } else if (isDeleting && charIndex === 0) {
+                    isDeleting = false;
+                    wordIndex = (wordIndex + 1) % words.length;
+                    typingSpeed = 500; // Pausa antes de la siguiente palabra
+                }
+
+                typeTimer = setTimeout(startTypewriter, typingSpeed);
+            }
+
+
+            // --- 3. EFECTO 3D HOVER (Tarjetas) ---
             document.querySelectorAll('.portal-card-wrapper').forEach(wrapper => {
                 const card = wrapper.querySelector('.portal-card');
-                
                 wrapper.addEventListener('mousemove', e => {
                     const rect = wrapper.getBoundingClientRect();
-                    const x = e.clientX - rect.left; // x position within the element.
-                    const y = e.clientY - rect.top;  // y position within the element.
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
                     
-                    // Para el brillo de fondo pseudo-elemento
                     card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
                     card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
 
-                    // Cálculo de inclinación 3D
                     const centerX = rect.width / 2;
                     const centerY = rect.height / 2;
-                    const rotateX = ((y - centerY) / centerY) * -5; // Máx 5 grados
-                    const rotateY = ((x - centerX) / centerX) * 5;
+                    const rotateX = ((y - centerY) / centerY) * -6;
+                    const rotateY = ((x - centerX) / centerX) * 6;
 
                     card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                 });
@@ -516,7 +699,7 @@
             });
 
 
-            // --- 3. SISTEMA DE PORTALES (iframe modal) ---
+            // --- 4. SISTEMA DE PORTALES ---
             const osWrapper = document.getElementById('os-window-wrapper');
             const osWindow = document.getElementById('os-window');
             const osIframe = document.getElementById('portal-iframe');
@@ -533,9 +716,8 @@
                     osWindow.classList.remove('scale-95');
                     osWindow.classList.add('scale-100');
                     
-                    // Efecto de profundidad en el fondo
                     viewHub.style.transform = 'scale(0.97)';
-                    viewHub.style.filter = 'blur(8px)';
+                    viewHub.style.filter = 'blur(10px) brightness(0.5)';
                     viewHub.style.transition = 'all 0.7s ease';
                 }, 10);
             };
@@ -569,13 +751,15 @@
             });
 
 
-            // --- 4. EASTER EGG EMOCIONAL (Inactividad 45s) ---
+            // --- 5. EASTER EGG: ANIMACIÓN DE PÍXELES DE LA LETRA 'P' ---
             let inactivityTimer;
             const easterEggOverlay = document.getElementById('easter-egg-overlay');
+            let isEasterEggActive = false;
             
             function showEasterEgg() {
                 if(introOverlay.style.display === 'none' && osWrapper.classList.contains('hidden')) {
                     easterEggOverlay.classList.remove('hidden');
+                    isEasterEggActive = true;
                     setTimeout(() => {
                         easterEggOverlay.classList.remove('opacity-0');
                         easterEggOverlay.classList.add('opacity-100');
@@ -585,11 +769,15 @@
 
             function resetInactivityTimer() {
                 clearTimeout(inactivityTimer);
-                if (!easterEggOverlay.classList.contains('hidden')) {
+                if (isEasterEggActive) {
                     easterEggOverlay.classList.remove('opacity-100');
                     easterEggOverlay.classList.add('opacity-0');
-                    setTimeout(() => easterEggOverlay.classList.add('hidden'), 3000);
+                    setTimeout(() => {
+                        easterEggOverlay.classList.add('hidden');
+                        isEasterEggActive = false;
+                    }, 2000);
                 }
+                // Activar a los 45 segundos de inactividad
                 inactivityTimer = setTimeout(showEasterEgg, 45000); 
             }
 
@@ -598,8 +786,81 @@
             });
             resetInactivityTimer();
 
+            // Animación del Canvas de la P
+            function initPixelP() {
+                const canvas = document.getElementById('pixel-p-canvas');
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                canvas.width = 400;
+                canvas.height = 400;
 
-            // --- 5. MAGIA DE PARTÍCULAS (Con soporte para Arcoíris) ---
+                // Matriz que dibuja la letra P
+                const pMatrix = [
+                    [1,1,1,1,1,1,0],
+                    [1,0,0,0,0,0,1],
+                    [1,0,0,0,0,0,1],
+                    [1,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,0],
+                    [1,0,0,0,0,0,0],
+                    [1,0,0,0,0,0,0],
+                    [1,0,0,0,0,0,0],
+                    [1,0,0,0,0,0,0]
+                ];
+
+                const pixels = [];
+                const size = 20; // Tamaño del pixel
+                const gap = 5;
+                const offsetX = (canvas.width - (pMatrix[0].length * (size + gap))) / 2;
+                const offsetY = (canvas.height - (pMatrix.length * (size + gap))) / 2;
+
+                for(let r=0; r<pMatrix.length; r++){
+                    for(let c=0; c<pMatrix[r].length; c++){
+                        if(pMatrix[r][c] === 1){
+                            pixels.push({
+                                x: offsetX + c * (size + gap),
+                                y: offsetY + r * (size + gap),
+                                basex: offsetX + c * (size + gap),
+                                basey: offsetY + r * (size + gap),
+                                size: size,
+                                delay: Math.random() * 100
+                            });
+                        }
+                    }
+                }
+
+                let hue = 0;
+                function drawP() {
+                    if(!isEasterEggActive) {
+                        requestAnimationFrame(drawP);
+                        return; // No dibujar si no está visible
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    hue += 1; // Cambia el color
+                    
+                    const time = Date.now() / 1000;
+
+                    pixels.forEach((p, i) => {
+                        // Movimiento flotante tipo Glitch/Ondas
+                        p.x = p.basex + Math.sin(time * 2 + p.delay) * 5;
+                        p.y = p.basey + Math.cos(time * 2 + p.delay) * 5;
+
+                        // Si es Pride, arcoiris, si no, color accent neon (cyan)
+                        ctx.fillStyle = isPride ? `hsl(${(hue + i * 10) % 360}, 100%, 60%)` : `rgba(0, 229, 255, ${Math.random() * 0.5 + 0.5})`;
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = ctx.fillStyle;
+                        
+                        ctx.fillRect(p.x, p.y, p.size, p.size);
+                    });
+
+                    requestAnimationFrame(drawP);
+                }
+                drawP();
+            }
+            initPixelP();
+
+
+            // --- 6. MAGIA DE PARTÍCULAS DEL FONDO ---
             function setupCanvas(canvasId, colorMode, interactive = false) {
                 const canvas = document.getElementById(canvasId);
                 if(!canvas) return;
@@ -621,17 +882,16 @@
                 window.addEventListener('resize', resize);
                 resize();
 
-                const colors = ['#ff0018', '#ffa52c', '#ffff41', '#008018', '#0000f9', '#86007d'];
+                const prideColors = ['#ff0018', '#ffa52c', '#ffff41', '#008018', '#0000f9', '#86007d'];
 
-                for(let i=0; i< (interactive ? 120 : 60); i++) {
+                for(let i=0; i< (interactive ? 150 : 80); i++) {
                     particles.push({
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
                         r: Math.random() * 2 + 0.5,
                         speedY: Math.random() * 0.5 + 0.1,
-                        opacity: Math.random() * 0.5 + 0.1,
-                        baseX: Math.random() * canvas.width,
-                        color: colorMode === 'rainbow' ? colors[Math.floor(Math.random() * colors.length)] : colorMode
+                        opacity: Math.random() * 0.6 + 0.1,
+                        color: colorMode === 'rainbow' ? prideColors[Math.floor(Math.random() * prideColors.length)] : colorMode
                     });
                 }
 
@@ -641,17 +901,16 @@
                     particles.forEach(p => {
                         ctx.fillStyle = p.color;
                         ctx.globalAlpha = p.opacity;
-                        ctx.shadowBlur = 10;
+                        ctx.shadowBlur = interactive ? 15 : 5;
                         ctx.shadowColor = p.color;
                         
-                        // Interacción magnética sutil en la intro
                         if (interactive && mouse.x != null) {
                             let dx = mouse.x - p.x;
                             let dy = mouse.y - p.y;
                             let distance = Math.sqrt(dx * dx + dy * dy);
                             if (distance < 150) {
-                                p.x += dx * 0.01;
-                                p.y += dy * 0.01;
+                                p.x += dx * 0.02; // Partículas reaccionan al mouse
+                                p.y += dy * 0.02;
                             }
                         }
 
@@ -671,13 +930,11 @@
                 draw();
             }
             
-            // Iniciar partículas (Toman el color dependiendo si es Junio o no)
-            setupCanvas('intro-particles', particleColor, true); // Interactiva
-            setupCanvas('ambient-canvas', 'rgba(255, 255, 255, 0.2)', false); // Fondo sutil
+            // Iniciar partículas
+            setupCanvas('intro-particles', particleColorMode, true); // Interactiva en intro
+            setupCanvas('ambient-canvas', 'rgba(255, 255, 255, 0.15)', false); // Fondo sutil general
 
         });
     </script>
 </body>
 </html>
-
-
